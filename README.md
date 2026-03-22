@@ -2,10 +2,10 @@
 
 ## Team Members:
 
-* 
-* 
-* 
-* 
+* Armaan Moosani
+* Michael Xu
+* Arianna Schwartz
+* Cheng Li
 
 ## User stories
 
