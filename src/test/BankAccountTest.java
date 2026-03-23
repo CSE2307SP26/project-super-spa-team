@@ -78,4 +78,11 @@ public class BankAccountTest {
             // do nothing, test passes
         }
     }
+
+    @Test
+    public void testCheckBalance() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(50);
+        assertEquals(50, testAccount.getBalance(), 0.01);
+    }
 }
