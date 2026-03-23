@@ -19,4 +19,12 @@ public class BankAccount {
     public double getBalance() {
         return this.balance;
     }
+
+    public void collectFee(double fee) {
+        if (fee > 0 && fee <= this.balance) {
+            this.balance -= fee;
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
 }
