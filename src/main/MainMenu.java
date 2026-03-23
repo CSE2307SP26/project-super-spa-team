@@ -5,7 +5,7 @@ import java.util.Scanner;
 public class MainMenu {
 
     private static final int EXIT_SELECTION = 3;
-	  private static final int MAX_SELECTION = 3;
+	private static final int MAX_SELECTION = 8;
 
 	  private BankAccount userAccount;
     private Scanner keyboardInput;
