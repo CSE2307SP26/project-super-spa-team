@@ -4,8 +4,8 @@ import java.util.Scanner;
 
 public class AdminMenu {
 
-    private static final int EXIT_SELECTION = 2;
-    private static final int MAX_SELECTION = 2;
+    private static final int EXIT_SELECTION = 3;
+    private static final int MAX_SELECTION = 3;
 
     private BankAccount account;
     private Scanner keyboardInput;
@@ -19,7 +19,8 @@ public class AdminMenu {
         System.out.println("Admin Menu");
 
         System.out.println("1. Collect fee from account");
-        System.out.println("2. Return to main menu");
+        System.out.println("2. Add interest payment");
+        System.out.println("3. Return to main menu");
     }
 
     public int getUserSelection(int max) {
@@ -36,6 +37,9 @@ public class AdminMenu {
             case 1:
                 performCollection();
                 break;
+            case 2:
+                performInterestPayment();
+                break;
         }
     }
 
@@ -46,6 +50,15 @@ public class AdminMenu {
             feeAmount = keyboardInput.nextInt();
         }
         account.collectFee(feeAmount);
+    }
+
+    public void performInterestPayment() {
+        double amount = -1;
+        while (amount < 0) {
+            System.out.print("Enter interest payment amount: ");
+            amount = keyboardInput.nextInt();
+        }
+        account.addInterest(amount);
     }
 
     public void run() {

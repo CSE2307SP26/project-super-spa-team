@@ -87,6 +87,26 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testAddInterest() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.addInterest(50);
+        assertEquals(150, testAccount.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testAddInterestNegativeAmount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        try {
+            testAccount.addInterest(-50);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // do nothing, test passes
+        }
+    }
+
+    @Test
     public void testCheckBalance() {
         BankAccount testAccount = new BankAccount();
         testAccount.deposit(50);

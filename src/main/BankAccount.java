@@ -35,4 +35,12 @@ public class BankAccount {
             throw new IllegalArgumentException();
         }
     }
+
+    public void addInterest(double amount) {
+        if (amount > 0) {
+            this.balance += amount;
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
 }
