@@ -1,13 +1,16 @@
 package main;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 3;
-  	private static final int MAX_SELECTION = 7;
+    private static final int VIEW_HISTORY_SELECTION = 3;
+    private static final int EXIT_SELECTION = 4;
+    private static final int ADMIN_SELECTION = 5;
+    private static final int MAX_SELECTION = 5;
 
-	private BankAccount userAccount;
+    private BankAccount userAccount;
     private Scanner keyboardInput;
 
     public MainMenu() {
@@ -20,10 +23,10 @@ public class MainMenu {
 
         System.out.println("1. Make a deposit");
         System.out.println("2. Check Balance");
+        System.out.println("3. View Transaction History");
         System.out.println("3. Make a withdrawal");
         System.out.println("4. Exit the app");
-        System.out.println("7. Admin Menu");
-        
+        System.out.println("5. Admin Menu");       
 
     }
 
@@ -47,10 +50,15 @@ public class MainMenu {
             case 3:
                 performWithdrawal();
                 break;
-            case 7:
+            case VIEW_HISTORY_SELECTION:
+                performViewTransactionHistory();
+                break;
+            case ADMIN_SELECTION:
                 AdminMenu adminMenu = new AdminMenu(userAccount, keyboardInput);
                 adminMenu.run();
                 break;
+
+
         }
     }
 
@@ -67,6 +75,17 @@ public class MainMenu {
         userAccount.deposit(depositAmount);
     }
 
+    public void performViewTransactionHistory() {
+        List<String> history = userAccount.getTransactionHistory();
+        if (history.isEmpty()) {
+            System.out.println("No transactions found.");
+            return;
+        }
+
+        System.out.println("Transaction History:");
+        for (int i = 0; i < history.size(); i++) {
+            System.out.println((i + 1) + ". " + history.get(i));
+        }
     public void performWithdrawal() {
         double withdrawalAmount = -1;
         while(withdrawalAmount < 0) {
