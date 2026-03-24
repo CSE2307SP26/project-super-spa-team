@@ -5,7 +5,7 @@ import java.util.Scanner;
 public class MainMenu {
 
     private static final int EXIT_SELECTION = 3;
-	private static final int MAX_SELECTION = 8;
+  	private static final int MAX_SELECTION = 8;
 
 	  private BankAccount userAccount;
     private Scanner keyboardInput;
@@ -22,6 +22,7 @@ public class MainMenu {
         System.out.println("2. Check Balance");
         System.out.println("3. Exit the app");
         System.out.println("7. Admin Menu");
+        
 
     }
 
