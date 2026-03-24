@@ -55,4 +55,18 @@ public class BankAccount {
             throw new IllegalArgumentException();
         }
     }
+
+    public void transfer(BankAccount recipient, double amount){
+        if (recipient == null){
+            throw new IllegalArgumentException();
+        }
+        if(amount > this.balance){
+            throw new IllegalArgumentException();
+        }
+        if (amount <= 0){
+            throw new IllegalArgumentException();
+        }
+        this.balance -= amount;
+        recipient.balance += amount;
+    }
 }

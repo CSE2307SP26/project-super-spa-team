@@ -46,7 +46,8 @@ public class BankAccountTest {
             //do nothing, test passes
         }
     }
-          
+    
+    @Test
     public void testCollectFee() {
         BankAccount testAccount = new BankAccount();
         testAccount.deposit(100);
@@ -76,6 +77,8 @@ public class BankAccountTest {
             //do nothing, test passes
         }
     }
+
+    @Test
     public void testCollectFeeNegativeAmount() {
         BankAccount testAccount = new BankAccount();
         testAccount.deposit(50);
@@ -124,4 +127,76 @@ public class BankAccountTest {
         assertTrue(testAccount.getTransactionHistory().get(0).contains("Deposit"));
         assertTrue(testAccount.getTransactionHistory().get(1).contains("Fee Collected"));
     }
+
+    @Test
+    public void testAllowedTransfer(){
+        BankAccount source = new BankAccount();
+        BankAccount recipient = new BankAccount();
+
+        source.deposit(100);
+        source.transfer(recipient, 25);
+
+        assertEquals(75, source.getBalance(), 0.01);
+        assertEquals(25, recipient.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testTransferringNegativeAmount(){
+        BankAccount source = new BankAccount();
+        BankAccount recipient = new BankAccount();
+
+        source.deposit(100);
+
+        try{
+            source.transfer(recipient, -25);
+            fail(); 
+        } catch(IllegalArgumentException e){
+            //do nothing, test passes
+        }
+    }
+
+    @Test
+    public void testTransferringZeroAmount(){
+        BankAccount source = new BankAccount();
+        BankAccount recipient = new BankAccount();
+
+        source.deposit(100);
+
+        try {
+            source.transfer(recipient, 0);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // do nothing, test passes
+        }
+    }
+
+    @Test
+    public void testTransferringMoreThanBalance(){
+        BankAccount source = new BankAccount();
+        BankAccount recipient = new BankAccount();
+
+        source.deposit(100);
+
+        try{
+            source.transfer(recipient, 110);
+            fail();
+        } catch( IllegalArgumentException e){
+            // do nothing, test passes
+        }
+    }
+
+    @Test
+    public void testTransferringAllBalance(){
+        BankAccount source = new BankAccount();
+        BankAccount recipient = new BankAccount();
+
+        source.deposit(100);
+        recipient.deposit(10);
+
+        source.transfer(recipient, 100);
+
+        assertEquals(0, source.getBalance(), 0.01);
+        assertEquals(110, recipient.getBalance(), 0.01);
+    }
+
 }
