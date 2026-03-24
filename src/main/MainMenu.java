@@ -20,7 +20,8 @@ public class MainMenu {
 
         System.out.println("1. Make a deposit");
         System.out.println("2. Check Balance");
-        System.out.println("3. Exit the app");
+        System.out.println("3. Make a withdrawal");
+        System.out.println("4. Exit the app");
         System.out.println("7. Admin Menu");
         
 
@@ -43,6 +44,9 @@ public class MainMenu {
             case 2:
                 performCheckBalance();
                 break;
+            case 3:
+                performWithdrawal();
+                break;
             case 7:
                 AdminMenu adminMenu = new AdminMenu(userAccount, keyboardInput);
                 adminMenu.run();
@@ -61,6 +65,15 @@ public class MainMenu {
             depositAmount = keyboardInput.nextInt();
         }
         userAccount.deposit(depositAmount);
+    }
+
+    public void performWithdrawal() {
+        double withdrawalAmount = -1;
+        while(withdrawalAmount < 0) {
+            System.out.print("How much would you like to withdraw: ");
+            withdrawalAmount = keyboardInput.nextInt();
+        }
+        userAccount.withdraw(withdrawalAmount);
     }
 
     public void run() {
