@@ -7,8 +7,8 @@ public class MainMenu {
 
     private static final int VIEW_HISTORY_SELECTION = 3;
     private static final int EXIT_SELECTION = 4;
-    private static final int ADMIN_SELECTION = 7;
-    private static final int MAX_SELECTION = 7;
+    private static final int ADMIN_SELECTION = 5;
+    private static final int MAX_SELECTION = 5;
 
     private BankAccount userAccount;
     private Scanner keyboardInput;
@@ -16,7 +16,6 @@ public class MainMenu {
     public MainMenu() {
         this.userAccount = new BankAccount();
         this.keyboardInput = new Scanner(System.in);
-        seedTestData();
     }
 
     public void displayOptions() {
@@ -26,8 +25,7 @@ public class MainMenu {
         System.out.println("2. Check Balance");
         System.out.println("3. View Transaction History");
         System.out.println("4. Exit the app");
-        System.out.println("7. Admin Menu");
-        
+        System.out.println("5. Admin Menu");
 
     }
 
@@ -82,12 +80,6 @@ public class MainMenu {
         for (int i = 0; i < history.size(); i++) {
             System.out.println((i + 1) + ". " + history.get(i));
         }
-    }
-
-    private void seedTestData() {
-        userAccount.deposit(1200.00);
-        userAccount.deposit(150.00);
-        userAccount.collectFee(35.00);
     }
 
     public void run() {
