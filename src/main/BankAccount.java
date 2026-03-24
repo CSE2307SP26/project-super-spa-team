@@ -3,15 +3,27 @@ package main;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class BankAccount {
 
+    private final String accountNumber;
     private double balance;
     private final List<String> transactionHistory;
 
-    public BankAccount() {
+    public BankAccount(String accountNumber) {
+        String id = Objects.requireNonNull(accountNumber, "accountNumber").trim();
+        if (id.isEmpty()) {
+            throw new IllegalArgumentException("accountNumber must not be blank");
+        }
+        this.accountNumber = id;
         this.balance = 0;
         this.transactionHistory = new ArrayList<>();
+        this.transactionHistory.add("Account opened: " + this.accountNumber);
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
     }
 
     public void deposit(double amount) {
