@@ -35,6 +35,14 @@ public class BankAccount {
         }
     }
 
+    public void withdraw(double amount) {
+        if (amount > 0 && amount <= this.balance){
+            this.balance -= amount;
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
     public double getBalance() {
         return this.balance;
     }
@@ -50,5 +58,13 @@ public class BankAccount {
 
     public List<String> getTransactionHistory() {
         return Collections.unmodifiableList(this.transactionHistory);
+    }
+  
+    public void addInterest(double amount) {
+        if (amount > 0) {
+            this.balance += amount;
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 }

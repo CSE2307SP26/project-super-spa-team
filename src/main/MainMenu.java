@@ -9,9 +9,11 @@ public class MainMenu {
 
     private static final int VIEW_HISTORY_SELECTION = 3;
     private static final int EXIT_SELECTION = 4;
+
     private static final int CREATE_ACCOUNT_SELECTION = 5;
     private static final int ADMIN_SELECTION = 7;
     private static final int MAX_SELECTION = 7;
+
 
     private final Map<String, BankAccount> accountsByNumber;
     private String activeAccountNumber;
@@ -22,7 +24,6 @@ public class MainMenu {
         this.accountsByNumber = new LinkedHashMap<>();
         this.nextAccountSequence = 1001;
         this.keyboardInput = new Scanner(System.in);
-        seedTestData();
     }
 
     private BankAccount getActiveAccount() {
@@ -36,6 +37,7 @@ public class MainMenu {
         System.out.println("1. Make a deposit");
         System.out.println("2. Check Balance");
         System.out.println("3. View Transaction History");
+        System.out.println("3. Make a withdrawal");
         System.out.println("4. Exit the app");
         System.out.println("5. Create additional account");
         System.out.println("7. Admin Menu");
@@ -60,6 +62,9 @@ public class MainMenu {
             case 2:
                 performCheckBalance();
                 break;
+            case 3:
+                performWithdrawal();
+                break;
             case VIEW_HISTORY_SELECTION:
                 performViewTransactionHistory();
                 break;
@@ -70,6 +75,8 @@ public class MainMenu {
                 AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput);
                 adminMenu.run();
                 break;
+
+
         }
     }
 
@@ -120,6 +127,13 @@ public class MainMenu {
 
         System.out.println("Additional account created: " + created.getAccountNumber());
         System.out.println("This account is now active. Balance: " + created.getBalance());
+    public void performWithdrawal() {
+        double withdrawalAmount = -1;
+        while(withdrawalAmount < 0) {
+            System.out.print("How much would you like to withdraw: ");
+            withdrawalAmount = keyboardInput.nextInt();
+        }
+        userAccount.withdraw(withdrawalAmount);
     }
 
     public void run() {
