@@ -23,7 +23,7 @@ public class BankAccountTest {
             testAccount.deposit(-50);
             fail();
         } catch (IllegalArgumentException e) {
-            //do nothing, test passes
+            // do nothing, test passes
         }
     }
 
@@ -45,6 +45,25 @@ public class BankAccountTest {
             //do nothing, test passes
         }
     }
+          
+    public void testCollectFee() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.collectFee(25);
+        assertEquals(75, testAccount.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testCollectFeeExceedingBalance() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(50);
+        try {
+            testAccount.collectFee(100);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // do nothing, test passes
+        }
+    }
 
     @Test
     public void testInsufficientFunds() {
@@ -55,5 +74,22 @@ public class BankAccountTest {
         } catch (IllegalArgumentException e) {
             //do nothing, test passes
         }
+    }
+    public void testCollectFeeNegativeAmount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(50);
+        try {
+            testAccount.collectFee(-10);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // do nothing, test passes
+        }
+    }
+
+    @Test
+    public void testCheckBalance() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(50);
+        assertEquals(50, testAccount.getBalance(), 0.01);
     }
 }
