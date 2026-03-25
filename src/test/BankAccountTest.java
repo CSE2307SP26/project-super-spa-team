@@ -30,7 +30,7 @@ public class BankAccountTest {
 
     @Test
     public void testWithdraw() {
-        BankAccount testAccount = new BankAccount();
+        BankAccount testAccount = new BankAccount("TEST-1");
         testAccount.deposit(50);
         testAccount.withdraw(20);
         assertEquals(30, testAccount.getBalance(), 0.01);
@@ -38,7 +38,7 @@ public class BankAccountTest {
 
     @Test
     public void testInvalidWithdraw() {
-        BankAccount testAccount = new BankAccount();
+        BankAccount testAccount = new BankAccount("TEST-1");
         try {
             testAccount.withdraw(-50);
             fail();
@@ -46,7 +46,7 @@ public class BankAccountTest {
             //do nothing, test passes
         }
     }
-          
+    @Test
     public void testCollectFee() {
         BankAccount testAccount = new BankAccount("TEST-1");
         testAccount.deposit(100);
@@ -68,7 +68,7 @@ public class BankAccountTest {
 
     @Test
     public void testInsufficientFunds() {
-        BankAccount testAccount = new BankAccount();
+        BankAccount testAccount = new BankAccount("TEST-1");
         try {
             testAccount.withdraw(50);
             fail();
@@ -76,6 +76,8 @@ public class BankAccountTest {
             //do nothing, test passes
         }
     }
+
+    @Test
     public void testCollectFeeNegativeAmount() {
         BankAccount testAccount = new BankAccount("TEST-1");
         testAccount.deposit(50);
@@ -89,7 +91,7 @@ public class BankAccountTest {
 
     @Test
     public void testAddInterest() {
-        BankAccount testAccount = new BankAccount();
+        BankAccount testAccount = new BankAccount("TEST-1");
         testAccount.deposit(100);
         testAccount.addInterest(50);
         assertEquals(150, testAccount.getBalance(), 0.01);
@@ -97,7 +99,7 @@ public class BankAccountTest {
 
     @Test
     public void testAddInterestNegativeAmount() {
-        BankAccount testAccount = new BankAccount();
+        BankAccount testAccount = new BankAccount("TEST-1");
         testAccount.deposit(100);
         try {
             testAccount.addInterest(-50);
@@ -119,10 +121,14 @@ public class BankAccountTest {
         BankAccount testAccount = new BankAccount("TEST-1");
         testAccount.deposit(100);
         testAccount.collectFee(25);
+        testAccount.addInterest(50);
+        testAccount.withdraw(50);
 
-        assertEquals(3, testAccount.getTransactionHistory().size());
+        assertEquals(5, testAccount.getTransactionHistory().size());
         assertTrue(testAccount.getTransactionHistory().get(0).contains("Account opened"));
         assertTrue(testAccount.getTransactionHistory().get(1).contains("Deposit"));
         assertTrue(testAccount.getTransactionHistory().get(2).contains("Fee Collected"));
+        assertTrue(testAccount.getTransactionHistory().get(3).contains("Interest Payment"));
+        assertTrue(testAccount.getTransactionHistory().get(4).contains("Withdrawal"));
     }
 }

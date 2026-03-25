@@ -38,6 +38,7 @@ public class BankAccount {
     public void withdraw(double amount) {
         if (amount > 0 && amount <= this.balance){
             this.balance -= amount;
+            this.transactionHistory.add("Withdrawal: $" + amount);
         } else {
             throw new IllegalArgumentException();
         }
@@ -63,6 +64,7 @@ public class BankAccount {
     public void addInterest(double amount) {
         if (amount > 0) {
             this.balance += amount;
+            this.transactionHistory.add("Interest Payment: $" + amount);
         } else {
             throw new IllegalArgumentException();
         }
