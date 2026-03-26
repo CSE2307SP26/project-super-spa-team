@@ -135,8 +135,8 @@ public class BankAccountTest {
 
     @Test
     public void testAllowedTransfer(){
-        BankAccount source = new BankAccount();
-        BankAccount recipient = new BankAccount();
+        BankAccount source = new BankAccount("1");
+        BankAccount recipient = new BankAccount("2");
 
         source.deposit(100);
         source.transfer(recipient, 25);
@@ -147,8 +147,8 @@ public class BankAccountTest {
 
     @Test
     public void testTransferringNegativeAmount(){
-        BankAccount source = new BankAccount();
-        BankAccount recipient = new BankAccount();
+        BankAccount source = new BankAccount("1");
+        BankAccount recipient = new BankAccount("2");
 
         source.deposit(100);
 
@@ -162,8 +162,8 @@ public class BankAccountTest {
 
     @Test
     public void testTransferringZeroAmount(){
-        BankAccount source = new BankAccount();
-        BankAccount recipient = new BankAccount();
+        BankAccount source = new BankAccount("1");
+        BankAccount recipient = new BankAccount("2");
 
         source.deposit(100);
 
@@ -177,8 +177,8 @@ public class BankAccountTest {
 
     @Test
     public void testTransferringMoreThanBalance(){
-        BankAccount source = new BankAccount();
-        BankAccount recipient = new BankAccount();
+        BankAccount source = new BankAccount("1");
+        BankAccount recipient = new BankAccount("2");
 
         source.deposit(100);
 
@@ -192,8 +192,8 @@ public class BankAccountTest {
 
     @Test
     public void testTransferringAllBalance(){
-        BankAccount source = new BankAccount();
-        BankAccount recipient = new BankAccount();
+        BankAccount source = new BankAccount("1");
+        BankAccount recipient = new BankAccount("2");
 
         source.deposit(100);
         recipient.deposit(10);
