@@ -204,4 +204,27 @@ public class BankAccountTest {
         assertEquals(110, recipient.getBalance(), 0.01);
     }
 
+    @Test
+    public void testClosingAccount(){
+        BankAccount account = new BankAccount("1");
+        account.deposit(50);
+        account.closeAccount();
+        assertTrue(account.isClosed());
+    }
+
+    @Test
+    public void testClosingAlreadyClosedAccount(){
+        BankAccount account = new BankAccount("1");
+        account.deposit(50);
+        account.closeAccount();
+
+        try{
+            account.closeAccount();
+            fail(); // shouldn't be able to get here
+        }catch (IllegalArgumentException e){
+            //do nothing,test passes
+        }
+    }
+
+
 }

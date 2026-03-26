@@ -10,6 +10,7 @@ public class BankAccount {
     private final String accountNumber;
     private double balance;
     private final List<String> transactionHistory;
+    private boolean closed;
 
     public BankAccount(String accountNumber) {
         String id = Objects.requireNonNull(accountNumber, "accountNumber").trim();
@@ -20,6 +21,7 @@ public class BankAccount {
         this.balance = 0;
         this.transactionHistory = new ArrayList<>();
         this.transactionHistory.add("Account opened: " + this.accountNumber);
+        this.closed = false;
     }
 
     public String getAccountNumber() {
@@ -82,5 +84,17 @@ public class BankAccount {
         }
         this.balance -= amount;
         recipient.balance += amount;
+    }
+
+    public boolean isClosed(){
+        return this.closed;
+    }
+
+    public void closeAccount(){
+        if (this.closed){
+            throw new IllegalArgumentException();
+        }
+        this.closed = true;
+        this.transactionHistory.add("Closed Account: " + this.accountNumber);
     }
 }

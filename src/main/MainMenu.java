@@ -14,6 +14,7 @@ public class MainMenu {
     private static final int EXIT_SELECTION = 8;
     private static final int ADMIN_SELECTION = 9;
     private static final int MAX_SELECTION = 9;
+    private static final int CLOSE_ACCOUNT_SELECTION = 7;
     private static final String DUMMY_ACCOUNT_NUMBER = "DUMMY-ACC";
 
     private Scanner keyboardInput;
@@ -49,6 +50,7 @@ public class MainMenu {
         System.out.println("4. View Transaction History");
         System.out.println("5. Create additional account");
         System.out.println("6. Transfer money to dummy account");
+        System.out.println("7. Close current account");
         System.out.println("8. Exit the app");
         System.out.println("9. Admin Menu");
 
@@ -86,6 +88,9 @@ public class MainMenu {
                 break;
             case 5:
                 performCreateAdditionalAccount();
+                break;
+            case CLOSE_ACCOUNT_SELECTION:
+                performCloseAccount();
                 break;
         }
     }
@@ -165,6 +170,17 @@ public class MainMenu {
             System.out.println("Transfer completed. Destination: " + dummyAccount.getAccountNumber());
         } catch (IllegalArgumentException e) {
             System.out.println("Transfer failed: invalid amount or insufficient funds.");
+        }
+    }
+
+    public void performCloseAccount(){
+        BankAccount activeAccount = getActiveAccount();
+
+        try{
+            activeAccount.closeAccount();
+            System.out.println("Closed Account " + activeAccount.getAccountNumber());
+        } catch (IllegalArgumentException e){
+            System.out.println("Unable to close account. Account already closed");
         }
     }
 
