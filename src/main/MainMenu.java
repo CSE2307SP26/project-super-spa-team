@@ -7,13 +7,8 @@ import java.util.Scanner;
 
 public class MainMenu {
 
-    private static final int VIEW_HISTORY_SELECTION = 3;
-    private static final int EXIT_SELECTION = 4;
-
-    private static final int CREATE_ACCOUNT_SELECTION = 5;
-    private static final int ADMIN_SELECTION = 7;
-    private static final int MAX_SELECTION = 7;
-
+    private static final int EXIT_SELECTION = 8;
+    private static final int MAX_SELECTION = 9;
 
     private final Map<String, BankAccount> accountsByNumber;
     private String activeAccountNumber;
@@ -35,13 +30,12 @@ public class MainMenu {
         System.out.println("Active account: " + activeAccountNumber);
 
         System.out.println("1. Make a deposit");
-        System.out.println("2. Check Balance");
-        System.out.println("3. View Transaction History");
-        System.out.println("3. Make a withdrawal");
-        System.out.println("4. Exit the app");
+        System.out.println("2. Make a withdrawal");
+        System.out.println("3. Check Balance");
+        System.out.println("4. View Transaction History");
         System.out.println("5. Create additional account");
-        System.out.println("7. Admin Menu");
-        
+        System.out.println("8. Exit the app");
+        System.out.println("9. Admin Menu");
 
     }
 
@@ -60,23 +54,21 @@ public class MainMenu {
                 performDeposit();
                 break;
             case 2:
-                performCheckBalance();
-                break;
-            case 3:
                 performWithdrawal();
                 break;
-            case VIEW_HISTORY_SELECTION:
+            case 3:
+                performCheckBalance();
+                break;
+            case 4:
                 performViewTransactionHistory();
                 break;
-            case CREATE_ACCOUNT_SELECTION:
+            case 5:
                 performCreateAdditionalAccount();
                 break;
-            case ADMIN_SELECTION:
+            case 9:
                 AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput);
                 adminMenu.run();
                 break;
-
-
         }
     }
 
@@ -93,6 +85,15 @@ public class MainMenu {
         getActiveAccount().deposit(depositAmount);
     }
 
+    public void performWithdrawal() {
+        double withdrawalAmount = -1;
+        while(withdrawalAmount < 0) {
+            System.out.print("How much would you like to withdraw: ");
+            withdrawalAmount = keyboardInput.nextInt();
+        }
+        getActiveAccount().withdraw(withdrawalAmount);
+    }
+
     public void performViewTransactionHistory() {
         List<String> history = getActiveAccount().getTransactionHistory();
         if (history.isEmpty()) {
@@ -104,15 +105,6 @@ public class MainMenu {
         for (int i = 0; i < history.size(); i++) {
             System.out.println((i + 1) + ". " + history.get(i));
         }
-    }
-
-    private void seedTestData() {
-        BankAccount seeded = new BankAccount("CHK1001");
-        seeded.deposit(1200.00);
-        seeded.deposit(150.00);
-        seeded.collectFee(35.00);
-        accountsByNumber.put(seeded.getAccountNumber(), seeded);
-        activeAccountNumber = seeded.getAccountNumber();
     }
 
     private void performCreateAdditionalAccount() {
@@ -127,16 +119,10 @@ public class MainMenu {
 
         System.out.println("Additional account created: " + created.getAccountNumber());
         System.out.println("This account is now active. Balance: " + created.getBalance());
-    public void performWithdrawal() {
-        double withdrawalAmount = -1;
-        while(withdrawalAmount < 0) {
-            System.out.print("How much would you like to withdraw: ");
-            withdrawalAmount = keyboardInput.nextInt();
-        }
-        userAccount.withdraw(withdrawalAmount);
     }
 
     public void run() {
+        performCreateAdditionalAccount();
         int selection = -1;
         while(selection != EXIT_SELECTION) {
             displayOptions();
