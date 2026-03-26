@@ -14,28 +14,28 @@ public class MainMenu {
     private static final int EXIT_SELECTION = 8;
     private static final int ADMIN_SELECTION = 9;
     private static final int MAX_SELECTION = 9;
+    private static final String DUMMY_ACCOUNT_NUMBER = "DUMMY-ACC";
 
-    private BankAccount userAccount;
-    private BankAccount secondAccount; // to receive transfers
     private Scanner keyboardInput;
-
-    public MainMenu() {
-        this.userAccount = new BankAccount();
-        this.secondAccount = new BankAccount();
-
     private final Map<String, BankAccount> accountsByNumber;
     private String activeAccountNumber;
     private int nextAccountSequence;
-    private Scanner keyboardInput;
+    private final BankAccount dummyAccount;
 
     public MainMenu() {
         this.accountsByNumber = new LinkedHashMap<>();
         this.nextAccountSequence = 1001;
         this.keyboardInput = new Scanner(System.in);
+        this.dummyAccount = new BankAccount(DUMMY_ACCOUNT_NUMBER);
+        this.accountsByNumber.put(this.dummyAccount.getAccountNumber(), this.dummyAccount);
     }
 
     private BankAccount getActiveAccount() {
-        return accountsByNumber.get(activeAccountNumber);
+        BankAccount active = accountsByNumber.get(activeAccountNumber);
+        if (active == null) {
+            throw new IllegalStateException("No active account is selected.");
+        }
+        return active;
     }
 
     public void displayOptions() {
@@ -48,7 +48,7 @@ public class MainMenu {
         System.out.println("3. Check Balance");
         System.out.println("4. View Transaction History");
         System.out.println("5. Create additional account");
-        System.out.println("6. Transfer money to second account");
+        System.out.println("6. Transfer money to dummy account");
         System.out.println("8. Exit the app");
         System.out.println("9. Admin Menu");
 
@@ -78,7 +78,7 @@ public class MainMenu {
                 performTransfer(); 
                 break;
             case ADMIN_SELECTION:
-                AdminMenu adminMenu = new AdminMenu(userAccount, keyboardInput);
+                AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput);
                 adminMenu.run();
                 break;
             case 3:
@@ -124,15 +124,6 @@ public class MainMenu {
             System.out.println((i + 1) + ". " + history.get(i));
         }
     }
-
-    public void performWithdrawal() {
-        double withdrawalAmount = -1;
-        while(withdrawalAmount < 0) {
-            System.out.print("How much would you like to withdraw: ");
-            withdrawalAmount = keyboardInput.nextInt();
-        }
-        userAccount.withdraw(withdrawalAmount);
-    }
     private void performCreateAdditionalAccount() {
         String number;
         do {
@@ -162,12 +153,19 @@ public class MainMenu {
         bankApp.run();
     }
 
-    public void performTransfer(){
+    public void performTransfer() {
+        double amount = -1;
+        while (amount < 0) {
+            System.out.print("How much would you like to transfer to the dummy account?: ");
+            amount = keyboardInput.nextDouble();
+        }
 
-        System.out.println("How much would you like to transfer to the second account?: ");
-        double amount = keyboardInput.nextDouble();
-        userAccount.transfer(secondAccount, amount);
-        System.out.println("Transfer completed.");
+        try {
+            getActiveAccount().transfer(dummyAccount, amount);
+            System.out.println("Transfer completed. Destination: " + dummyAccount.getAccountNumber());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Transfer failed: invalid amount or insufficient funds.");
+        }
     }
 
 }
