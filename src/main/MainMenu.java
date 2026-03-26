@@ -1,16 +1,19 @@
 package main;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class MainMenu {
 
-    private static final int VIEW_HISTORY_SELECTION = 3;
-    private static final int WITHDRAWAL_SELECTION = 4;
-    private static final int TRANSFER_SELECTION = 5;
-    private static final int EXIT_SELECTION = 6;
-    private static final int ADMIN_SELECTION = 7;
-    private static final int MAX_SELECTION = 7;
+
+    private static final int VIEW_HISTORY_SELECTION = 4;
+    private static final int WITHDRAWAL_SELECTION = 2;
+    private static final int TRANSFER_SELECTION = 6;
+    private static final int EXIT_SELECTION = 8;
+    private static final int ADMIN_SELECTION = 9;
+    private static final int MAX_SELECTION = 9;
 
     private BankAccount userAccount;
     private BankAccount secondAccount; // to receive transfers
@@ -19,19 +22,35 @@ public class MainMenu {
     public MainMenu() {
         this.userAccount = new BankAccount();
         this.secondAccount = new BankAccount();
+
+    private final Map<String, BankAccount> accountsByNumber;
+    private String activeAccountNumber;
+    private int nextAccountSequence;
+    private Scanner keyboardInput;
+
+    public MainMenu() {
+        this.accountsByNumber = new LinkedHashMap<>();
+        this.nextAccountSequence = 1001;
         this.keyboardInput = new Scanner(System.in);
+    }
+
+    private BankAccount getActiveAccount() {
+        return accountsByNumber.get(activeAccountNumber);
     }
 
     public void displayOptions() {
         System.out.println("Welcome to the 237 Bank App!");
+        System.out.println("Active account: " + activeAccountNumber);
 
         System.out.println("1. Make a deposit");
-        System.out.println("2. Check Balance");
-        System.out.println("3. View Transaction History");
-        System.out.println("4. Make a withdrawal");
-        System.out.println("5. Transfer money to second account");
-        System.out.println("6. Exit the app");
-        System.out.println("7. Admin Menu");       
+
+        System.out.println("2. Make a withdrawal");
+        System.out.println("3. Check Balance");
+        System.out.println("4. View Transaction History");
+        System.out.println("5. Create additional account");
+        System.out.println("6. Transfer money to second account");
+        System.out.println("8. Exit the app");
+        System.out.println("9. Admin Menu");
 
     }
 
@@ -49,14 +68,11 @@ public class MainMenu {
             case 1:
                 performDeposit();
                 break;
-            case 2:
-                performCheckBalance();
+            case WITHDRAWAL_SELECTION:
+                performWithdrawal();
                 break;
             case VIEW_HISTORY_SELECTION:
                 performViewTransactionHistory();
-                break;
-            case WITHDRAWAL_SELECTION:
-                performWithdrawal();
                 break;
             case TRANSFER_SELECTION:
                 performTransfer(); 
@@ -65,11 +81,17 @@ public class MainMenu {
                 AdminMenu adminMenu = new AdminMenu(userAccount, keyboardInput);
                 adminMenu.run();
                 break;
+            case 3:
+                performCheckBalance();
+                break;
+            case 5:
+                performCreateAdditionalAccount();
+                break;
         }
     }
 
     public void performCheckBalance() {
-        System.out.println("Your balance is: " + userAccount.getBalance());
+        System.out.println("Your balance is: " + getActiveAccount().getBalance());
     }
 
     public void performDeposit() {
@@ -78,11 +100,20 @@ public class MainMenu {
             System.out.print("How much would you like to deposit: ");
             depositAmount = keyboardInput.nextInt();
         }
-        userAccount.deposit(depositAmount);
+        getActiveAccount().deposit(depositAmount);
+    }
+
+    public void performWithdrawal() {
+        double withdrawalAmount = -1;
+        while(withdrawalAmount < 0) {
+            System.out.print("How much would you like to withdraw: ");
+            withdrawalAmount = keyboardInput.nextInt();
+        }
+        getActiveAccount().withdraw(withdrawalAmount);
     }
 
     public void performViewTransactionHistory() {
-        List<String> history = userAccount.getTransactionHistory();
+        List<String> history = getActiveAccount().getTransactionHistory();
         if (history.isEmpty()) {
             System.out.println("No transactions found.");
             return;
@@ -102,8 +133,22 @@ public class MainMenu {
         }
         userAccount.withdraw(withdrawalAmount);
     }
+    private void performCreateAdditionalAccount() {
+        String number;
+        do {
+            number = String.format("ACC-%04d", nextAccountSequence++);
+        } while (accountsByNumber.containsKey(number));
+
+        BankAccount created = new BankAccount(number);
+        accountsByNumber.put(created.getAccountNumber(), created);
+        activeAccountNumber = created.getAccountNumber();
+
+        System.out.println("Additional account created: " + created.getAccountNumber());
+        System.out.println("This account is now active. Balance: " + created.getBalance());
+    }
 
     public void run() {
+        performCreateAdditionalAccount();
         int selection = -1;
         while(selection != EXIT_SELECTION) {
             displayOptions();
