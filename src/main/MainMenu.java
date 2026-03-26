@@ -7,8 +7,21 @@ import java.util.Scanner;
 
 public class MainMenu {
 
+
+    private static final int VIEW_HISTORY_SELECTION = 4;
+    private static final int WITHDRAWAL_SELECTION = 2;
+    private static final int TRANSFER_SELECTION = 6;
     private static final int EXIT_SELECTION = 8;
+    private static final int ADMIN_SELECTION = 9;
     private static final int MAX_SELECTION = 9;
+
+    private BankAccount userAccount;
+    private BankAccount secondAccount; // to receive transfers
+    private Scanner keyboardInput;
+
+    public MainMenu() {
+        this.userAccount = new BankAccount();
+        this.secondAccount = new BankAccount();
 
     private final Map<String, BankAccount> accountsByNumber;
     private String activeAccountNumber;
@@ -30,10 +43,12 @@ public class MainMenu {
         System.out.println("Active account: " + activeAccountNumber);
 
         System.out.println("1. Make a deposit");
+
         System.out.println("2. Make a withdrawal");
         System.out.println("3. Check Balance");
         System.out.println("4. View Transaction History");
         System.out.println("5. Create additional account");
+        System.out.println("6. Transfer money to second account");
         System.out.println("8. Exit the app");
         System.out.println("9. Admin Menu");
 
@@ -53,21 +68,24 @@ public class MainMenu {
             case 1:
                 performDeposit();
                 break;
-            case 2:
+            case WITHDRAWAL_SELECTION:
                 performWithdrawal();
+                break;
+            case VIEW_HISTORY_SELECTION:
+                performViewTransactionHistory();
+                break;
+            case TRANSFER_SELECTION:
+                performTransfer(); 
+                break;
+            case ADMIN_SELECTION:
+                AdminMenu adminMenu = new AdminMenu(userAccount, keyboardInput);
+                adminMenu.run();
                 break;
             case 3:
                 performCheckBalance();
                 break;
-            case 4:
-                performViewTransactionHistory();
-                break;
             case 5:
                 performCreateAdditionalAccount();
-                break;
-            case 9:
-                AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput);
-                adminMenu.run();
                 break;
         }
     }
@@ -107,6 +125,14 @@ public class MainMenu {
         }
     }
 
+    public void performWithdrawal() {
+        double withdrawalAmount = -1;
+        while(withdrawalAmount < 0) {
+            System.out.print("How much would you like to withdraw: ");
+            withdrawalAmount = keyboardInput.nextInt();
+        }
+        userAccount.withdraw(withdrawalAmount);
+    }
     private void performCreateAdditionalAccount() {
         String number;
         do {
@@ -134,6 +160,14 @@ public class MainMenu {
     public static void main(String[] args) {
         MainMenu bankApp = new MainMenu();
         bankApp.run();
+    }
+
+    public void performTransfer(){
+
+        System.out.println("How much would you like to transfer to the second account?: ");
+        double amount = keyboardInput.nextDouble();
+        userAccount.transfer(secondAccount, amount);
+        System.out.println("Transfer completed.");
     }
 
 }
