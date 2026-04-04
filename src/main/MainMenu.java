@@ -105,7 +105,14 @@ public class MainMenu {
             System.out.print("How much would you like to deposit: ");
             depositAmount = keyboardInput.nextInt();
         }
-        getActiveAccount().deposit(depositAmount);
+        System.out.print("Confirm deposit of $" + depositAmount + "? (yes/no): ");
+        String confirmation = keyboardInput.next();
+        
+        if (confirmation.equalsIgnoreCase("yes")) {
+            getActiveAccount().deposit(depositAmount);
+        } else {
+            System.out.println("Deposit cancelled.");
+        }
     }
 
     public void performWithdrawal() {
@@ -114,7 +121,14 @@ public class MainMenu {
             System.out.print("How much would you like to withdraw: ");
             withdrawalAmount = keyboardInput.nextInt();
         }
-        getActiveAccount().withdraw(withdrawalAmount);
+        System.out.print("Confirm withdrawal of $" + withdrawalAmount + "? (yes/no): ");
+        String confirmation = keyboardInput.next();
+        
+        if (confirmation.equalsIgnoreCase("yes")) {
+            getActiveAccount().withdraw(withdrawalAmount);
+        } else {
+            System.out.println("Withdrawal cancelled.");
+        }
     }
 
     public void performViewTransactionHistory() {
