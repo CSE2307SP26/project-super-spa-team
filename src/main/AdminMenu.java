@@ -6,6 +6,8 @@ public class AdminMenu {
 
     private static final int EXIT_SELECTION = 3;
     private static final int MAX_SELECTION = 3;
+    private static final String ADMIN_PASSWORD = "admin123";
+    private static final int MAX_PASSWORD_ATTEMPTS = 3;
 
     private BankAccount account;
     private Scanner keyboardInput;
@@ -13,6 +15,21 @@ public class AdminMenu {
     public AdminMenu(BankAccount account, Scanner keyboardInput) {
         this.account = account;
         this.keyboardInput = keyboardInput;
+    }
+
+    public boolean authenticate() {
+        System.out.println("Admin Menu requires authentication.");
+        for (int attempt = 1; attempt <= MAX_PASSWORD_ATTEMPTS; attempt++) {
+            System.out.print("Enter admin password (attempt " + attempt + "/" + MAX_PASSWORD_ATTEMPTS + "): ");
+            String input = keyboardInput.next();
+            if (ADMIN_PASSWORD.equals(input)) {
+                System.out.println("Access granted.");
+                return true;
+            }
+            System.out.println("Incorrect password.");
+        }
+        System.out.println("Access denied. Too many failed attempts.");
+        return false;
     }
 
     public void displayOptions() {
