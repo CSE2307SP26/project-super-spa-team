@@ -7,7 +7,6 @@ import java.util.Scanner;
 
 public class MainMenu {
 
-
     private static final int VIEW_HISTORY_SELECTION = 4;
     private static final int WITHDRAWAL_SELECTION = 2;
     private static final int TRANSFER_SELECTION = 6;
@@ -68,7 +67,7 @@ public class MainMenu {
 
     public int getUserSelection(int max) {
         int selection = -1;
-        while(selection < 1 || selection > max) {
+        while (selection < 1 || selection > max) {
             System.out.print("Please make a selection: ");
             selection = keyboardInput.nextInt();
         }
@@ -87,7 +86,7 @@ public class MainMenu {
                 performViewTransactionHistory();
                 break;
             case TRANSFER_SELECTION:
-                performTransfer(); 
+                performTransfer();
                 break;
             case ADMIN_SELECTION:
                 performAdminMenu();
@@ -105,20 +104,25 @@ public class MainMenu {
     }
 
     public void performCheckBalance() {
-        System.out.println("Your balance is: " + getActiveAccount().getBalance());
+        System.out.println("Your balance is: $" + String.format("%.2f", getActiveAccount().getBalance()));
     }
 
     public void performDeposit() {
         double depositAmount = -1;
-        while(depositAmount < 0) {
+        while (depositAmount < 0) {
             System.out.print("How much would you like to deposit: ");
-            depositAmount = keyboardInput.nextInt();
+            depositAmount = keyboardInput.nextDouble();
         }
-        System.out.print("Confirm deposit of $" + depositAmount + "? (yes/no): ");
-        String confirmation = keyboardInput.next();
-        
-        if (confirmation.equalsIgnoreCase("yes")) {
-            getActiveAccount().deposit(depositAmount);
+        System.out.print("Confirm deposit of $" + String.format("%.2f", depositAmount) + "? (yes/no): ");
+        String confirmation = keyboardInput.next().trim();
+
+        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+            try {
+                getActiveAccount().deposit(depositAmount);
+                System.out.println("Deposit successful. New balance: $" + String.format("%.2f", getActiveAccountBalance()));
+            } catch (IllegalArgumentException e) {
+                System.out.println("Deposit failed: invalid amount.");
+            }
         } else {
             System.out.println("Deposit cancelled.");
         }
@@ -126,15 +130,20 @@ public class MainMenu {
 
     public void performWithdrawal() {
         double withdrawalAmount = -1;
-        while(withdrawalAmount < 0) {
+        while (withdrawalAmount < 0) {
             System.out.print("How much would you like to withdraw: ");
-            withdrawalAmount = keyboardInput.nextInt();
+            withdrawalAmount = keyboardInput.nextDouble();
         }
-        System.out.print("Confirm withdrawal of $" + withdrawalAmount + "? (yes/no): ");
-        String confirmation = keyboardInput.next();
-        
-        if (confirmation.equalsIgnoreCase("yes")) {
-            getActiveAccount().withdraw(withdrawalAmount);
+        System.out.print("Confirm withdrawal of $" + String.format("%.2f", withdrawalAmount) + "? (yes/no): ");
+        String confirmation = keyboardInput.next().trim();
+
+        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+            try {
+                getActiveAccount().withdraw(withdrawalAmount);
+                System.out.println("Withdrawal successful. New balance: $" + String.format("%.2f", getActiveAccountBalance()));
+            } catch (IllegalArgumentException e) {
+                System.out.println("Withdrawal failed: insufficient funds or invalid amount.");
+            }
         } else {
             System.out.println("Withdrawal cancelled.");
         }
@@ -152,6 +161,7 @@ public class MainMenu {
             System.out.println((i + 1) + ". " + history.get(i));
         }
     }
+
     public void performCreateAdditionalAccount() {
         String number;
         do {
@@ -163,13 +173,13 @@ public class MainMenu {
         activeAccountNumber = created.getAccountNumber();
 
         System.out.println("Additional account created: " + created.getAccountNumber());
-        System.out.println("This account is now active. Balance: " + created.getBalance());
+        System.out.println("This account is now active. Balance: $" + String.format("%.2f", created.getBalance()));
     }
 
     public void run() {
         performCreateAdditionalAccount();
         int selection = -1;
-        while(selection != EXIT_SELECTION) {
+        while (selection != EXIT_SELECTION) {
             displayOptions();
             selection = getUserSelection(MAX_SELECTION);
             processInput(selection);
@@ -191,6 +201,7 @@ public class MainMenu {
         try {
             getActiveAccount().transfer(dummyAccount, amount);
             System.out.println("Transfer completed. Destination: " + dummyAccount.getAccountNumber());
+            System.out.println("New balance: $" + String.format("%.2f", getActiveAccountBalance()));
         } catch (IllegalArgumentException e) {
             System.out.println("Transfer failed: invalid amount or insufficient funds.");
         }
@@ -217,13 +228,17 @@ public class MainMenu {
         return adminLockoutEndTime;
     }
 
-    public void performCloseAccount(){
+    public double getActiveAccountBalance() {
+        return getActiveAccount().getBalance();
+    }
+
+    public void performCloseAccount() {
         BankAccount activeAccount = getActiveAccount();
 
-        try{
+        try {
             activeAccount.closeAccount();
             System.out.println("Closed Account " + activeAccount.getAccountNumber());
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             System.out.println("Unable to close account. Account already closed");
         }
     }
