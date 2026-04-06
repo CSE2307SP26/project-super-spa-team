@@ -87,7 +87,7 @@ public class MainMenu {
                 performCheckBalance();
                 break;
             case 5:
-                performCreateAdditionalAccount();
+                performCreateAdditionalAccount(true);
                 break;
             case CLOSE_ACCOUNT_SELECTION:
                 performCloseAccount();
@@ -129,7 +129,7 @@ public class MainMenu {
             System.out.println((i + 1) + ". " + history.get(i));
         }
     }
-    private void performCreateAdditionalAccount() {
+    private void performCreateAdditionalAccount(boolean consumeNewline) {
         String number;
         do {
             number = String.format("ACC-%04d", nextAccountSequence++);
@@ -140,7 +140,9 @@ public class MainMenu {
         activeAccountNumber = created.getAccountNumber();
 
         System.out.print("Enter a nickname for this account (or press Enter to skip): ");
-        keyboardInput.nextLine();
+        if (consumeNewline) {
+            keyboardInput.nextLine();
+        }
         String nick = keyboardInput.nextLine();
         created.setNickname(nick);
 
@@ -149,7 +151,7 @@ public class MainMenu {
     }
 
     public void run() {
-        performCreateAdditionalAccount();
+        performCreateAdditionalAccount(false);
         int selection = -1;
         while(selection != EXIT_SELECTION) {
             displayOptions();
