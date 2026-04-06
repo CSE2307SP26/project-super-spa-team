@@ -80,7 +80,7 @@ public class MainMenu {
                 performTransfer(); 
                 break;
             case ADMIN_SELECTION:
-                AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput);
+                AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput, accountsByNumber);
                 adminMenu.run();
                 break;
             case 3:

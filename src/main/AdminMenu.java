@@ -1,18 +1,21 @@
 package main;
 
+import java.util.Map;
 import java.util.Scanner;
 
 public class AdminMenu {
 
-    private static final int EXIT_SELECTION = 3;
-    private static final int MAX_SELECTION = 3;
+    private static final int EXIT_SELECTION = 4;
+    private static final int MAX_SELECTION = 4;
 
     private BankAccount account;
+    private Map<String, BankAccount> allAccounts;
     private Scanner keyboardInput;
 
-    public AdminMenu(BankAccount account, Scanner keyboardInput) {
+    public AdminMenu(BankAccount account, Scanner keyboardInput, Map<String, BankAccount> allAccounts) {
         this.account = account;
         this.keyboardInput = keyboardInput;
+        this.allAccounts = allAccounts;
     }
 
     public void displayOptions() {
@@ -20,7 +23,8 @@ public class AdminMenu {
 
         System.out.println("1. Collect fee from account");
         System.out.println("2. Add interest payment");
-        System.out.println("3. Return to main menu");
+        System.out.println("3. View all accounts summary");
+        System.out.println("4. Return to main menu");
     }
 
     public int getUserSelection(int max) {
@@ -40,7 +44,21 @@ public class AdminMenu {
             case 2:
                 performInterestPayment();
                 break;
+            case 3:
+                performViewAllAccounts();
+                break;
         }
+    }
+
+    public void performViewAllAccounts() {
+        System.out.println("--- All Accounts Summary ---");
+        System.out.printf("%-15s %-12s %s%n", "Account Number", "Balance", "Status");
+        for (BankAccount acc : allAccounts.values()) {
+            String status = acc.isClosed() ? "Closed" : "Open";
+            System.out.printf("%-15s $%-11.2f %s%n",
+                acc.getAccountNumber(), acc.getBalance(), status);
+        }
+        System.out.println("----------------------------");
     }
 
     public void performCollection() {
