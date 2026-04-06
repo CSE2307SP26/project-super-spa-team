@@ -2,6 +2,7 @@ package test;
 
 import main.MainMenu;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -44,6 +45,44 @@ public class MainMenuTest {
         menu.performCreateAdditionalAccount();
         menu.performAdminMenu();
         assertTrue(menu.getAdminLockoutEndTime() == 0);
+    }
+
+    @Test
+    public void testDepositConfirmedUpdatesBalance() {
+        Scanner scanner = new Scanner(new ByteArrayInputStream("50\nyes\n".getBytes()));
+        MainMenu menu = new MainMenu(scanner);
+        menu.performCreateAdditionalAccount();
+        menu.performDeposit();
+        assertEquals(50.0, menu.getActiveAccountBalance(), 0.01);
+    }
+
+    @Test
+    public void testDepositCancelledLeavesBalanceUnchanged() {
+        Scanner scanner = new Scanner(new ByteArrayInputStream("50\nno\n".getBytes()));
+        MainMenu menu = new MainMenu(scanner);
+        menu.performCreateAdditionalAccount();
+        menu.performDeposit();
+        assertEquals(0.0, menu.getActiveAccountBalance(), 0.01);
+    }
+
+    @Test
+    public void testWithdrawalConfirmedUpdatesBalance() {
+        Scanner scanner = new Scanner(new ByteArrayInputStream("50\nyes\n20\nyes\n".getBytes()));
+        MainMenu menu = new MainMenu(scanner);
+        menu.performCreateAdditionalAccount();
+        menu.performDeposit();
+        menu.performWithdrawal();
+        assertEquals(30.0, menu.getActiveAccountBalance(), 0.01);
+    }
+
+    @Test
+    public void testWithdrawalCancelledLeavesBalanceUnchanged() {
+        Scanner scanner = new Scanner(new ByteArrayInputStream("50\nyes\n20\nno\n".getBytes()));
+        MainMenu menu = new MainMenu(scanner);
+        menu.performCreateAdditionalAccount();
+        menu.performDeposit();
+        menu.performWithdrawal();
+        assertEquals(50.0, menu.getActiveAccountBalance(), 0.01);
     }
 
 }
