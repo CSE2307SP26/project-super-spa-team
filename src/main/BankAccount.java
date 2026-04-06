@@ -11,6 +11,7 @@ public class BankAccount {
     private double balance;
     private final List<String> transactionHistory;
     private boolean closed;
+    private String nickname;
 
     public BankAccount(String accountNumber) {
         String id = Objects.requireNonNull(accountNumber, "accountNumber").trim();
@@ -26,6 +27,19 @@ public class BankAccount {
 
     public String getAccountNumber() {
         return accountNumber;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = (nickname == null || nickname.isBlank()) ? null : nickname.trim();
+    }
+
+    public String getDisplayName() {
+        if (nickname == null) return accountNumber;
+        return nickname + " (" + accountNumber + ")";
     }
 
     public void deposit(double amount) {

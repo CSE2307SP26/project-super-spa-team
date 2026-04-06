@@ -41,7 +41,7 @@ public class MainMenu {
 
     public void displayOptions() {
         System.out.println("Welcome to the 237 Bank App!");
-        System.out.println("Active account: " + activeAccountNumber);
+        System.out.println("Active account: " + getActiveAccount().getDisplayName());
 
         System.out.println("1. Make a deposit");
 
@@ -139,7 +139,12 @@ public class MainMenu {
         accountsByNumber.put(created.getAccountNumber(), created);
         activeAccountNumber = created.getAccountNumber();
 
-        System.out.println("Additional account created: " + created.getAccountNumber());
+        System.out.print("Enter a nickname for this account (or press Enter to skip): ");
+        keyboardInput.nextLine();
+        String nick = keyboardInput.nextLine();
+        created.setNickname(nick);
+
+        System.out.println("Additional account created: " + created.getDisplayName());
         System.out.println("This account is now active. Balance: " + created.getBalance());
     }
 
@@ -178,7 +183,7 @@ public class MainMenu {
 
         try{
             activeAccount.closeAccount();
-            System.out.println("Closed Account " + activeAccount.getAccountNumber());
+            System.out.println("Closed Account " + activeAccount.getDisplayName());
         } catch (IllegalArgumentException e){
             System.out.println("Unable to close account. Account already closed");
         }
