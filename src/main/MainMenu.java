@@ -16,17 +16,27 @@ public class MainMenu {
     private static final int MAX_SELECTION = 9;
     private static final int CLOSE_ACCOUNT_SELECTION = 7;
     private static final String DUMMY_ACCOUNT_NUMBER = "DUMMY-ACC";
+    private static final int ADMIN_COOLDOWN_SECONDS = 10;
 
     private Scanner keyboardInput;
     private final Map<String, BankAccount> accountsByNumber;
     private String activeAccountNumber;
     private int nextAccountSequence;
     private final BankAccount dummyAccount;
+    private long adminLockoutEndTime = 0;
 
     public MainMenu() {
         this.accountsByNumber = new LinkedHashMap<>();
         this.nextAccountSequence = 1001;
         this.keyboardInput = new Scanner(System.in);
+        this.dummyAccount = new BankAccount(DUMMY_ACCOUNT_NUMBER);
+        this.accountsByNumber.put(this.dummyAccount.getAccountNumber(), this.dummyAccount);
+    }
+
+    public MainMenu(Scanner scanner) {
+        this.accountsByNumber = new LinkedHashMap<>();
+        this.nextAccountSequence = 1001;
+        this.keyboardInput = scanner;
         this.dummyAccount = new BankAccount(DUMMY_ACCOUNT_NUMBER);
         this.accountsByNumber.put(this.dummyAccount.getAccountNumber(), this.dummyAccount);
     }
@@ -80,8 +90,7 @@ public class MainMenu {
                 performTransfer(); 
                 break;
             case ADMIN_SELECTION:
-                AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput);
-                adminMenu.run();
+                performAdminMenu();
                 break;
             case 3:
                 performCheckBalance();
@@ -129,7 +138,7 @@ public class MainMenu {
             System.out.println((i + 1) + ". " + history.get(i));
         }
     }
-    private void performCreateAdditionalAccount() {
+    public void performCreateAdditionalAccount() {
         String number;
         do {
             number = String.format("ACC-%04d", nextAccountSequence++);
@@ -171,6 +180,27 @@ public class MainMenu {
         } catch (IllegalArgumentException e) {
             System.out.println("Transfer failed: invalid amount or insufficient funds.");
         }
+    }
+
+    public void performAdminMenu() {
+        long now = System.currentTimeMillis();
+        if (now < adminLockoutEndTime) {
+            long secondsLeft = (adminLockoutEndTime - now) / 1000;
+            System.out.println("Admin Menu is locked. Please wait " + secondsLeft + " second(s) before trying again.");
+            return;
+        }
+
+        AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput);
+        if (adminMenu.authenticate()) {
+            adminMenu.run();
+        } else {
+            adminLockoutEndTime = System.currentTimeMillis() + (ADMIN_COOLDOWN_SECONDS * 1000);
+            System.out.println("Admin Menu locked for " + ADMIN_COOLDOWN_SECONDS + " seconds.");
+        }
+    }
+
+    public long getAdminLockoutEndTime() {
+        return adminLockoutEndTime;
     }
 
     public void performCloseAccount(){
