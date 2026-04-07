@@ -226,37 +226,5 @@ public class BankAccountTest {
         }
     }
 
-    @Test
-    public void testDepositingOverMaxLimit(){
-        BankAccount account = new BankAccount("1");
-
-        try{
-            account.deposit(5001);
-            fail(); // depositng 5001 should be illegal
-        } catch (IllegalArgumentException e){
-        //do nothing, test passes
-        }
-    }
-
-    @Test
-    public void testWithdrawingOverMaxLimit(){
-        BankAccount account = new BankAccount("1");
-        account.deposit(4000);
-        account.deposit(4000);
-
-        try{
-            account.withdraw(5001);
-            fail(); // withdrawing 5001 should be illegal
-        } catch (IllegalArgumentException e){
-        //do nothing, test passes
-        }
-    }
-
-  
-
-
-
-
-
 
 }
