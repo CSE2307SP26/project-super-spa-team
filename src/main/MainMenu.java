@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 public class MainMenu {
 
+
     private static final int VIEW_HISTORY_SELECTION = 4;
     private static final int WITHDRAWAL_SELECTION = 2;
     private static final int TRANSFER_SELECTION = 6;
@@ -21,27 +22,17 @@ public class MainMenu {
     private static final int MAX_SELECTION = 10;
     private static final int CLOSE_ACCOUNT_SELECTION = 7;
     private static final String DUMMY_ACCOUNT_NUMBER = "DUMMY-ACC";
-    private static final int ADMIN_COOLDOWN_SECONDS = 10;
 
     private Scanner keyboardInput;
     private final Map<String, BankAccount> accountsByNumber;
     private String activeAccountNumber;
     private int nextAccountSequence;
     private final BankAccount dummyAccount;
-    private long adminLockoutEndTime = 0;
 
     public MainMenu() {
         this.accountsByNumber = new LinkedHashMap<>();
         this.nextAccountSequence = 1001;
         this.keyboardInput = new Scanner(System.in);
-        this.dummyAccount = new BankAccount(DUMMY_ACCOUNT_NUMBER);
-        this.accountsByNumber.put(this.dummyAccount.getAccountNumber(), this.dummyAccount);
-    }
-
-    public MainMenu(Scanner scanner) {
-        this.accountsByNumber = new LinkedHashMap<>();
-        this.nextAccountSequence = 1001;
-        this.keyboardInput = scanner;
         this.dummyAccount = new BankAccount(DUMMY_ACCOUNT_NUMBER);
         this.accountsByNumber.put(this.dummyAccount.getAccountNumber(), this.dummyAccount);
     }
@@ -74,7 +65,7 @@ public class MainMenu {
 
     public int getUserSelection(int max) {
         int selection = -1;
-        while (selection < 1 || selection > max) {
+        while(selection < 1 || selection > max) {
             System.out.print("Please make a selection: ");
             selection = keyboardInput.nextInt();
         }
@@ -93,13 +84,14 @@ public class MainMenu {
                 performViewTransactionHistory();
                 break;
             case TRANSFER_SELECTION:
-                performTransfer();
+                performTransfer(); 
                 break;
             case FREEZE_UNLOCK_SELECTION:
                 performFreezeOrUnlock();
                 break;
             case ADMIN_SELECTION:
-                performAdminMenu();
+                AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput);
+                adminMenu.run();
                 break;
             case 3:
                 performCheckBalance();
@@ -114,7 +106,7 @@ public class MainMenu {
     }
 
     public void performCheckBalance() {
-        System.out.println("Your balance is: $" + String.format("%.2f", getActiveAccount().getBalance()));
+        System.out.println("Your balance is: " + getActiveAccount().getBalance());
     }
 
     public void performDeposit() {
@@ -123,22 +115,15 @@ public class MainMenu {
             return;
         }
         double depositAmount = -1;
-        while (depositAmount < 0) {
+        while(depositAmount < 0) {
             System.out.print("How much would you like to deposit: ");
-            depositAmount = keyboardInput.nextDouble();
+            depositAmount = keyboardInput.nextInt();
         }
-        System.out.print("Confirm deposit of $" + String.format("%.2f", depositAmount) + "? (yes/no): ");
-        String confirmation = keyboardInput.next().trim();
-
-        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
-            try {
-                getActiveAccount().deposit(depositAmount);
-                System.out.println("Deposit successful. New balance: $" + String.format("%.2f", getActiveAccountBalance()));
-            } catch (IllegalArgumentException e) {
-                System.out.println("Deposit failed: invalid amount.");
-            }
-        } else {
-            System.out.println("Deposit cancelled.");
+        try {
+            getActiveAccount().deposit(depositAmount);
+            System.out.println("Deposit successful.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Deposit failed: amount must be greater than 0 and no more than $5000.");
         }
     }
 
@@ -148,22 +133,15 @@ public class MainMenu {
             return;
         }
         double withdrawalAmount = -1;
-        while (withdrawalAmount < 0) {
+        while(withdrawalAmount < 0) {
             System.out.print("How much would you like to withdraw: ");
-            withdrawalAmount = keyboardInput.nextDouble();
+            withdrawalAmount = keyboardInput.nextInt();
         }
-        System.out.print("Confirm withdrawal of $" + String.format("%.2f", withdrawalAmount) + "? (yes/no): ");
-        String confirmation = keyboardInput.next().trim();
-
-        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
-            try {
-                getActiveAccount().withdraw(withdrawalAmount);
-                System.out.println("Withdrawal successful. New balance: $" + String.format("%.2f", getActiveAccountBalance()));
-            } catch (IllegalArgumentException e) {
-                System.out.println("Withdrawal failed: insufficient funds or invalid amount.");
-            }
-        } else {
-            System.out.println("Withdrawal cancelled.");
+        try {
+            getActiveAccount().withdraw(withdrawalAmount);
+            System.out.println("Withdrawal successful.");
+        } catch (IllegalArgumentException e) {
+        System.out.println("Withdrawal failed: amount must be greater than 0, no more than $5000, and no more than your balance.");
         }
     }
 
@@ -264,8 +242,7 @@ public class MainMenu {
         lines.addAll(withAmount);
         lines.addAll(withoutAmount);
     }
-
-    public void performCreateAdditionalAccount() {
+    private void performCreateAdditionalAccount() {
         String number;
         do {
             number = String.format("ACC-%04d", nextAccountSequence++);
@@ -276,13 +253,13 @@ public class MainMenu {
         activeAccountNumber = created.getAccountNumber();
 
         System.out.println("Additional account created: " + created.getAccountNumber());
-        System.out.println("This account is now active. Balance: $" + String.format("%.2f", created.getBalance()));
+        System.out.println("This account is now active. Balance: " + created.getBalance());
     }
 
     public void run() {
         performCreateAdditionalAccount();
         int selection = -1;
-        while (selection != EXIT_SELECTION) {
+        while(selection != EXIT_SELECTION) {
             displayOptions();
             selection = getUserSelection(MAX_SELECTION);
             processInput(selection);
@@ -308,48 +285,22 @@ public class MainMenu {
         try {
             getActiveAccount().transfer(dummyAccount, amount);
             System.out.println("Transfer completed. Destination: " + dummyAccount.getAccountNumber());
-            System.out.println("New balance: $" + String.format("%.2f", getActiveAccountBalance()));
         } catch (IllegalArgumentException e) {
             System.out.println("Transfer failed: invalid amount or insufficient funds.");
         }
     }
 
-    public void performAdminMenu() {
-        long now = System.currentTimeMillis();
-        if (now < adminLockoutEndTime) {
-            long secondsLeft = (adminLockoutEndTime - now) / 1000;
-            System.out.println("Admin Menu is locked. Please wait " + secondsLeft + " second(s) before trying again.");
-            return;
-        }
-
-        AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput);
-        if (adminMenu.authenticate()) {
-            adminMenu.run();
-        } else {
-            adminLockoutEndTime = System.currentTimeMillis() + (ADMIN_COOLDOWN_SECONDS * 1000);
-            System.out.println("Admin Menu locked for " + ADMIN_COOLDOWN_SECONDS + " seconds.");
-        }
-    }
-
-    public long getAdminLockoutEndTime() {
-        return adminLockoutEndTime;
-    }
-
-    public double getActiveAccountBalance() {
-        return getActiveAccount().getBalance();
-    }
-
-    public void performCloseAccount() {
+    public void performCloseAccount(){
         BankAccount activeAccount = getActiveAccount();
         if (activeAccount.isFrozen()) {
             System.out.println("Unable to close account. Account is frozen; unlock it first.");
             return;
         }
 
-        try {
+        try{
             activeAccount.closeAccount();
             System.out.println("Closed Account " + activeAccount.getAccountNumber());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e){
             System.out.println("Unable to close account. Account already closed");
         }
     }

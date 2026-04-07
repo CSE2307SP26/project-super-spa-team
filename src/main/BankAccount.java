@@ -15,6 +15,7 @@ public class BankAccount {
     private double balance;
     private final List<String> transactionHistory;
     private boolean closed;
+    private static final double maxTransactionLimit = 5000.0;
     private boolean frozen;
     private String code;
 
@@ -37,7 +38,7 @@ public class BankAccount {
     }
 
     public void deposit(double amount) {
-        if (amount > 0) {
+        if (amount > 0 && amount <= maxTransactionLimit) {
             this.balance += amount;
             this.transactionHistory.add("Deposit: $" + String.format("%.2f", amount));
         } else {
@@ -46,7 +47,7 @@ public class BankAccount {
     }
 
     public void withdraw(double amount) {
-        if (amount > 0 && amount <= this.balance) {
+        if (amount > 0 && amount <= this.balance && amount <= maxTransactionLimit) {
             this.balance -= amount;
             this.transactionHistory.add("Withdrawal: $" + String.format("%.2f", amount));
         } else {
