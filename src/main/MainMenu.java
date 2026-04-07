@@ -1,10 +1,14 @@
 package main;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainMenu {
 
@@ -170,10 +174,95 @@ public class MainMenu {
             return;
         }
 
-        System.out.println("Transaction History:");
-        for (int i = 0; i < history.size(); i++) {
-            System.out.println((i + 1) + ". " + history.get(i));
+        System.out.println("View history options:");
+        System.out.println("1. All");
+        System.out.println("2. Money IN (deposits/interest)");
+        System.out.println("3. Money OUT (withdrawals/fees)");
+        int categoryChoice = getUserSelection(3);
+
+        System.out.println("Sort options:");
+        System.out.println("1. No sorting (original order)");
+        System.out.println("2. Sort by $ amount (ascending)");
+        System.out.println("3. Sort by $ amount (descending)");
+        int sortChoice = getUserSelection(3);
+
+        List<String> filtered = new ArrayList<>();
+        for (String line : history) {
+            if (categoryChoice == 2 && !isMoneyInLine(line)) {
+                continue;
+            }
+            if (categoryChoice == 3 && !isMoneyOutLine(line)) {
+                continue;
+            }
+            filtered.add(line);
         }
+
+        if (filtered.isEmpty()) {
+            System.out.println("No transactions found for that filter.");
+            return;
+        }
+
+        if (sortChoice != 1) {
+            sortHistoryByAmount(filtered, sortChoice == 3);
+        }
+
+        System.out.println("Transaction History:");
+        for (int i = 0; i < filtered.size(); i++) {
+            System.out.println((i + 1) + ". " + filtered.get(i));
+        }
+    }
+
+    private static final Pattern AMOUNT_PATTERN = Pattern.compile("\\$\\s*([0-9]+(?:\\.[0-9]+)?)");
+
+    private static boolean isMoneyInLine(String line) {
+        if (line == null) {
+            return false;
+        }
+        return line.startsWith("Deposit:") || line.startsWith("Interest Payment:");
+    }
+
+    private static boolean isMoneyOutLine(String line) {
+        if (line == null) {
+            return false;
+        }
+        return line.startsWith("Withdrawal:") || line.startsWith("Fee Collected:");
+    }
+
+    private static Double extractAmount(String line) {
+        if (line == null) {
+            return null;
+        }
+        Matcher m = AMOUNT_PATTERN.matcher(line);
+        if (!m.find()) {
+            return null;
+        }
+        try {
+            return Double.parseDouble(m.group(1));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static void sortHistoryByAmount(List<String> lines, boolean descending) {
+        List<String> withAmount = new ArrayList<>();
+        List<String> withoutAmount = new ArrayList<>();
+        for (String line : lines) {
+            if (extractAmount(line) == null) {
+                withoutAmount.add(line);
+            } else {
+                withAmount.add(line);
+            }
+        }
+
+        Comparator<String> byAmount = Comparator.comparing(MainMenu::extractAmount);
+        if (descending) {
+            byAmount = byAmount.reversed();
+        }
+        Collections.sort(withAmount, byAmount);
+
+        lines.clear();
+        lines.addAll(withAmount);
+        lines.addAll(withoutAmount);
     }
 
     public void performCreateAdditionalAccount() {
