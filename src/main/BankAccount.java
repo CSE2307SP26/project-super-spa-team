@@ -4,13 +4,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.security.SecureRandom;
 
 public class BankAccount {
+
+    private static final SecureRandom RNG = new SecureRandom();
+    private static final char[] UNLOCK_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".toCharArray();
 
     private final String accountNumber;
     private double balance;
     private final List<String> transactionHistory;
     private boolean closed;
+    private boolean frozen;
+    private String code;
 
     public BankAccount(String accountNumber) {
         String id = Objects.requireNonNull(accountNumber, "accountNumber").trim();
@@ -22,6 +28,8 @@ public class BankAccount {
         this.transactionHistory = new ArrayList<>();
         this.transactionHistory.add("Account opened: " + this.accountNumber);
         this.closed = false;
+        this.frozen = false;
+        this.code = null;
     }
 
     public String getAccountNumber() {
@@ -90,11 +98,74 @@ public class BankAccount {
         return this.closed;
     }
 
-    public void closeAccount() {
+
+    public boolean isFrozen() {
+        return this.frozen;
+    }
+
+    public String getCode() {
+        return this.code;
+    }
+
+    /**
+     * Freezes the account and creates an unlock code. Returns the generated code.
+     * Code is optional and will remain null unless an account has been frozen.
+     */
+    public String freeze() {
         if (this.closed) {
+            throw new IllegalStateException("Cannot freeze a closed account.");
+        }
+        if (this.frozen) {
+            return this.code;
+        }
+
+        this.frozen = true;
+        this.code = generateUnlockCode(6);
+        this.transactionHistory.add("Account frozen: " + this.accountNumber);
+        return this.code;
+    }
+
+    public boolean unlock(String codeAttempt) {
+        if (!this.frozen) {
+            return true;
+        }
+        if (codeAttempt == null) {
+            return false;
+        }
+
+        String attempt = codeAttempt.trim();
+        if (attempt.isEmpty()) {
+            return false;
+        }
+        if (this.code == null) {
+            return false;
+        }
+        if (!this.code.equals(attempt)) {
+            return false;
+        }
+
+        this.frozen = false;
+        this.code = null;
+        this.transactionHistory.add("Account unlocked: " + this.accountNumber);
+        return true;
+    }
+
+    public void closeAccount(){
+        if (this.closed){
             throw new IllegalArgumentException();
         }
         this.closed = true;
         this.transactionHistory.add("Closed Account: " + this.accountNumber);
+    }
+
+    private static String generateUnlockCode(int length) {
+        if (length <= 0) {
+            throw new IllegalArgumentException("length must be positive");
+        }
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(UNLOCK_CODE_ALPHABET[RNG.nextInt(UNLOCK_CODE_ALPHABET.length)]);
+        }
+        return sb.toString();
     }
 }
