@@ -37,18 +37,18 @@ public class BankAccount {
     }
 
     public void deposit(double amount) {
-        if(amount > 0) {
+        if (amount > 0) {
             this.balance += amount;
-            this.transactionHistory.add("Deposit: $" + amount);
+            this.transactionHistory.add("Deposit: $" + String.format("%.2f", amount));
         } else {
             throw new IllegalArgumentException();
         }
     }
 
     public void withdraw(double amount) {
-        if (amount > 0 && amount <= this.balance){
+        if (amount > 0 && amount <= this.balance) {
             this.balance -= amount;
-            this.transactionHistory.add("Withdrawal: $" + amount);
+            this.transactionHistory.add("Withdrawal: $" + String.format("%.2f", amount));
         } else {
             throw new IllegalArgumentException();
         }
@@ -61,7 +61,7 @@ public class BankAccount {
     public void collectFee(double fee) {
         if (fee > 0 && fee <= this.balance) {
             this.balance -= fee;
-            this.transactionHistory.add("Fee Collected: $" + fee);
+            this.transactionHistory.add("Fee Collected: $" + String.format("%.2f", fee));
         } else {
             throw new IllegalArgumentException();
         }
@@ -70,33 +70,34 @@ public class BankAccount {
     public List<String> getTransactionHistory() {
         return Collections.unmodifiableList(this.transactionHistory);
     }
-  
+
     public void addInterest(double amount) {
         if (amount > 0) {
             this.balance += amount;
-            this.transactionHistory.add("Interest Payment: $" + amount);
+            this.transactionHistory.add("Interest Payment: $" + String.format("%.2f", amount));
         } else {
             throw new IllegalArgumentException();
         }
     }
 
-    public void transfer(BankAccount recipient, double amount){
-        if (recipient == null){
+    public void transfer(BankAccount recipient, double amount) {
+        if (recipient == null) {
             throw new IllegalArgumentException();
         }
-        if(amount > this.balance){
+        if (amount > this.balance) {
             throw new IllegalArgumentException();
         }
-        if (amount <= 0){
+        if (amount <= 0) {
             throw new IllegalArgumentException();
         }
         this.balance -= amount;
         recipient.balance += amount;
     }
 
-    public boolean isClosed(){
+    public boolean isClosed() {
         return this.closed;
     }
+
 
     public boolean isFrozen() {
         return this.frozen;
