@@ -88,7 +88,7 @@ public class BankAccount {
         if (amount > this.balance) {
             throw new IllegalArgumentException();
         }
-        if (amount <= 0) {
+        if (amount <= 0 || amount > maxTransactionLimit) {
             throw new IllegalArgumentException();
         }
         this.balance -= amount;
