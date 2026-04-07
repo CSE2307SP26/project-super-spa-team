@@ -4,8 +4,8 @@ import java.util.Scanner;
 
 public class AdminMenu {
 
-    private static final int EXIT_SELECTION = 3;
-    private static final int MAX_SELECTION = 3;
+    private static final int EXIT_SELECTION = 5;
+    private static final int MAX_SELECTION = 5;
     private static final String ADMIN_PASSWORD = "admin123";
     private static final int MAX_PASSWORD_ATTEMPTS = 3;
 
@@ -37,7 +37,9 @@ public class AdminMenu {
 
         System.out.println("1. Collect fee from account");
         System.out.println("2. Add interest payment");
-        System.out.println("3. Return to main menu");
+        System.out.println("3. Freeze this account");
+        System.out.println("4. Unlock this account");
+        System.out.println("5. Return to main menu");
     }
 
     public int getUserSelection(int max) {
@@ -56,6 +58,12 @@ public class AdminMenu {
                 break;
             case 2:
                 performInterestPayment();
+                break;
+            case 3:
+                performFreeze();
+                break;
+            case 4:
+                performUnlock();
                 break;
         }
     }
@@ -85,6 +93,35 @@ public class AdminMenu {
             System.out.println("Interest payment successful. New balance: $" + String.format("%.2f", account.getBalance()));
         } catch (IllegalArgumentException e) {
             System.out.println("Interest payment failed.");
+        }
+    }
+
+    public void performFreeze() {
+        if (account.isClosed()) {
+            System.out.println("That account is closed and cannot be frozen.");
+            return;
+        }
+        if (account.isFrozen()) {
+            System.out.println("Account is already frozen.");
+            return;
+        }
+        String code = account.freeze();
+        System.out.println("Account frozen: " + account.getAccountNumber());
+        System.out.println("Unlock code: " + code);
+    }
+
+    public void performUnlock() {
+        if (!account.isFrozen()) {
+            System.out.println("That account is not frozen.");
+            return;
+        }
+        System.out.print("Enter unlock code: ");
+        String attempt = keyboardInput.next();
+        boolean unlocked = account.unlock(attempt);
+        if (unlocked) {
+            System.out.println("Account unlocked: " + account.getAccountNumber());
+        } else {
+            System.out.println("Unlock failed: code did not match.");
         }
     }
 
