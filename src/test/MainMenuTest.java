@@ -14,62 +14,62 @@ public class MainMenuTest {
 
     @Test
     public void testAdminMenuNotLockedInitially() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
-        menu.performCreateAdditionalAccount();
+        menu.performCreateAdditionalAccount(false);
         assertTrue(menu.getAdminLockoutEndTime() == 0);
     }
 
     @Test
     public void testAdminMenuLocksAfterThreeFailedAttempts() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("wrong1\nwrong2\nwrong3\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\nwrong1\nwrong2\nwrong3\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
-        menu.performCreateAdditionalAccount();
+        menu.performCreateAdditionalAccount(false);
         menu.performAdminMenu();
         assertTrue(menu.getAdminLockoutEndTime() > System.currentTimeMillis());
     }
 
     @Test
     public void testAdminMenuLockoutSetToTenSeconds() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("wrong1\nwrong2\nwrong3\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\nwrong1\nwrong2\nwrong3\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
-        menu.performCreateAdditionalAccount();
+        menu.performCreateAdditionalAccount(false);
         menu.performAdminMenu();
         assertTrue(menu.getAdminLockoutEndTime() <= System.currentTimeMillis() + 10000);
     }
 
     @Test
     public void testAdminMenuNotLockedAfterSuccessfulLogin() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("admin123\n5\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\nadmin123\n5\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
-        menu.performCreateAdditionalAccount();
+        menu.performCreateAdditionalAccount(false);
         menu.performAdminMenu();
         assertTrue(menu.getAdminLockoutEndTime() == 0);
     }
 
     @Test
     public void testDepositConfirmedUpdatesBalance() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("50\nyes\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\n50\nyes\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
-        menu.performCreateAdditionalAccount();
+        menu.performCreateAdditionalAccount(false);
         menu.performDeposit();
         assertEquals(50.0, menu.getActiveAccountBalance(), 0.01);
     }
 
     @Test
     public void testDepositCancelledLeavesBalanceUnchanged() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("50\nno\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\n50\nno\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
-        menu.performCreateAdditionalAccount();
+        menu.performCreateAdditionalAccount(false);
         menu.performDeposit();
         assertEquals(0.0, menu.getActiveAccountBalance(), 0.01);
     }
 
     @Test
     public void testWithdrawalConfirmedUpdatesBalance() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("50\nyes\n20\nyes\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\n50\nyes\n20\nyes\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
-        menu.performCreateAdditionalAccount();
+        menu.performCreateAdditionalAccount(false);
         menu.performDeposit();
         menu.performWithdrawal();
         assertEquals(30.0, menu.getActiveAccountBalance(), 0.01);
@@ -77,9 +77,9 @@ public class MainMenuTest {
 
     @Test
     public void testWithdrawalCancelledLeavesBalanceUnchanged() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("50\nyes\n20\nno\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\n50\nyes\n20\nno\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
-        menu.performCreateAdditionalAccount();
+        menu.performCreateAdditionalAccount(false);
         menu.performDeposit();
         menu.performWithdrawal();
         assertEquals(50.0, menu.getActiveAccountBalance(), 0.01);
