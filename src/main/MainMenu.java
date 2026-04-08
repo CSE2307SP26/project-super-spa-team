@@ -15,13 +15,15 @@ public class MainMenu {
 
     private static final int VIEW_HISTORY_SELECTION = 4;
     private static final int WITHDRAWAL_SELECTION = 2;
-    private static final int TRANSFER_SELECTION = 6;
-    private static final int EXIT_SELECTION = 8;
-    private static final int ADMIN_SELECTION = 9;
-    private static final int MAX_SELECTION = 9;
-    private static final int CLOSE_ACCOUNT_SELECTION = 7;
+    private static final int TRANSFER_SELECTION = 7;
+    private static final int EXIT_SELECTION = 9;
+    private static final int ADMIN_SELECTION = 10;
+    private static final int MAX_SELECTION = 10;
+    private static final int CLOSE_ACCOUNT_SELECTION = 8;
     private static final String DUMMY_ACCOUNT_NUMBER = "DUMMY-ACC";
     private static final int ADMIN_COOLDOWN_SECONDS = 10;
+
+ private static final int SWITCH_ACTIVE_ACCOUNT_SELECTION = 6;
 
     private Scanner keyboardInput;
     private final Map<String, BankAccount> accountsByNumber;
@@ -54,6 +56,10 @@ public class MainMenu {
         return active;
     }
 
+    public String getActiveAccountNumber() {
+        return activeAccountNumber;
+    }
+
     public void displayOptions() {
         System.out.println("Welcome to the 237 Bank App!");
         System.out.println("Active account: " + getActiveAccount().getDisplayName());
@@ -64,10 +70,11 @@ public class MainMenu {
         System.out.println("3. Check Balance");
         System.out.println("4. View Transaction History");
         System.out.println("5. Create additional account");
-        System.out.println("6. Transfer money to dummy account");
-        System.out.println("7. Close current account");
-        System.out.println("8. Exit the app");
-        System.out.println("9. Admin Menu");
+        System.out.println("6. Switch active account");
+        System.out.println("7. Transfer money to dummy account");
+        System.out.println("8. Close current account");
+        System.out.println("9. Exit the app");
+        System.out.println("10. Admin Menu");
 
     }
 
@@ -106,6 +113,8 @@ public class MainMenu {
             case CLOSE_ACCOUNT_SELECTION:
                 performCloseAccount();
                 break;
+            case SWITCH_ACTIVE_ACCOUNT_SELECTION:
+                performSwitchActiveAccount();
         }
     }
 
@@ -374,6 +383,42 @@ public class MainMenu {
         }
     }
 
+    public void performSwitchActiveAccount(){
+        // create list of accounts the user can select
+        List<BankAccount> selectableAccounts = new ArrayList<>();
 
+        for (BankAccount account : accountsByNumber.values()) {
+            
+            if (!account.getAccountNumber().equals(DUMMY_ACCOUNT_NUMBER) && !account.isClosed() && !account.getAccountNumber().equals(activeAccountNumber)) {        
+                selectableAccounts.add(account);
+            }
+       }
+
+       if (selectableAccounts.isEmpty()){
+        System.out.println("There are no accounts available to switch to.");
+        return;
+       }
+
+       System.out.println("Select an account to switch to and make active:");
+       
+       int num = 1;
+       for( BankAccount accountOption : selectableAccounts){
+            System.out.println(num + ". " + accountOption.getAccountNumber());
+            num +=1; 
+       }
+
+       int selection = -1;
+        
+       while (selection < 1 || selection > selectableAccounts.size()) {
+            System.out.print("Enter the number of the account you want to make active: ");
+            selection = keyboardInput.nextInt();
+        }
+
+        BankAccount selectedAccount = selectableAccounts.get(selection - 1);
+        activeAccountNumber = selectedAccount.getAccountNumber();
+
+        System.out.println("Active account switched to: " + selectedAccount.getDisplayName());
+
+    }   
 
 }
