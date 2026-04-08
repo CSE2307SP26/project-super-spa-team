@@ -403,7 +403,7 @@ public class MainMenu {
        
        int num = 1;
        for( BankAccount accountOption : selectableAccounts){
-            System.out.println(num + ". " + accountOption.getAccountNumber());
+            System.out.println(num + ". " + accountOption.getDisplayName());
             num +=1; 
        }
 
