@@ -5,8 +5,10 @@ import java.util.Scanner;
 
 public class AdminMenu {
 
-    private static final int EXIT_SELECTION = 4;
-    private static final int MAX_SELECTION = 4;
+    private static final int EXIT_SELECTION = 6;
+    private static final int MAX_SELECTION = 6;
+    private static final String ADMIN_PASSWORD = "admin123";
+    private static final int MAX_PASSWORD_ATTEMPTS = 3;
 
     private BankAccount account;
     private Map<String, BankAccount> allAccounts;
@@ -18,13 +20,30 @@ public class AdminMenu {
         this.allAccounts = allAccounts;
     }
 
+    public boolean authenticate() {
+        System.out.println("Admin Menu requires authentication.");
+        for (int attempt = 1; attempt <= MAX_PASSWORD_ATTEMPTS; attempt++) {
+            System.out.print("Enter admin password (attempt " + attempt + "/" + MAX_PASSWORD_ATTEMPTS + "): ");
+            String input = keyboardInput.next();
+            if (ADMIN_PASSWORD.equals(input)) {
+                System.out.println("Access granted.");
+                return true;
+            }
+            System.out.println("Incorrect password.");
+        }
+        System.out.println("Access denied. Too many failed attempts.");
+        return false;
+    }
+
     public void displayOptions() {
         System.out.println("Admin Menu");
 
         System.out.println("1. Collect fee from account");
         System.out.println("2. Add interest payment");
         System.out.println("3. View all accounts summary");
-        System.out.println("4. Return to main menu");
+        System.out.println("4. Freeze this account");
+        System.out.println("5. Unlock this account");
+        System.out.println("6. Return to main menu");
     }
 
     public int getUserSelection(int max) {
@@ -47,6 +66,12 @@ public class AdminMenu {
             case 3:
                 performViewAllAccounts();
                 break;
+            case 4:
+                performFreeze();
+                break;
+            case 5:
+                performUnlock();
+                break;
         }
     }
 
@@ -65,18 +90,57 @@ public class AdminMenu {
         double feeAmount = -1;
         while (feeAmount < 0 || feeAmount > account.getBalance()) {
             System.out.print("Enter fee amount to collect: ");
-            feeAmount = keyboardInput.nextInt();
+            feeAmount = keyboardInput.nextDouble();
         }
-        account.collectFee(feeAmount);
+        try {
+            account.collectFee(feeAmount);
+            System.out.println("Fee collection successful. New balance: $" + String.format("%.2f", account.getBalance()));
+        } catch (IllegalArgumentException e) {
+            System.out.println("Fee collection failed.");
+        }
     }
 
     public void performInterestPayment() {
         double amount = -1;
         while (amount < 0) {
             System.out.print("Enter interest payment amount: ");
-            amount = keyboardInput.nextInt();
+            amount = keyboardInput.nextDouble();
         }
-        account.addInterest(amount);
+        try {
+            account.addInterest(amount);
+            System.out.println("Interest payment successful. New balance: $" + String.format("%.2f", account.getBalance()));
+        } catch (IllegalArgumentException e) {
+            System.out.println("Interest payment failed.");
+        }
+    }
+
+    public void performFreeze() {
+        if (account.isClosed()) {
+            System.out.println("That account is closed and cannot be frozen.");
+            return;
+        }
+        if (account.isFrozen()) {
+            System.out.println("Account is already frozen.");
+            return;
+        }
+        String code = account.freeze();
+        System.out.println("Account frozen: " + account.getAccountNumber());
+        System.out.println("Unlock code: " + code);
+    }
+
+    public void performUnlock() {
+        if (!account.isFrozen()) {
+            System.out.println("That account is not frozen.");
+            return;
+        }
+        System.out.print("Enter unlock code: ");
+        String attempt = keyboardInput.next();
+        boolean unlocked = account.unlock(attempt);
+        if (unlocked) {
+            System.out.println("Account unlocked: " + account.getAccountNumber());
+        } else {
+            System.out.println("Unlock failed: code did not match.");
+        }
     }
 
     public void run() {

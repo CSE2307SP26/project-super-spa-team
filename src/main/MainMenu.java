@@ -1,9 +1,14 @@
 package main;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainMenu {
 
@@ -16,17 +21,27 @@ public class MainMenu {
     private static final int MAX_SELECTION = 9;
     private static final int CLOSE_ACCOUNT_SELECTION = 7;
     private static final String DUMMY_ACCOUNT_NUMBER = "DUMMY-ACC";
+    private static final int ADMIN_COOLDOWN_SECONDS = 10;
 
     private Scanner keyboardInput;
     private final Map<String, BankAccount> accountsByNumber;
     private String activeAccountNumber;
     private int nextAccountSequence;
     private final BankAccount dummyAccount;
+    private long adminLockoutEndTime = 0;
 
     public MainMenu() {
         this.accountsByNumber = new LinkedHashMap<>();
         this.nextAccountSequence = 1001;
         this.keyboardInput = new Scanner(System.in);
+        this.dummyAccount = new BankAccount(DUMMY_ACCOUNT_NUMBER);
+        this.accountsByNumber.put(this.dummyAccount.getAccountNumber(), this.dummyAccount);
+    }
+
+    public MainMenu(Scanner scanner) {
+        this.accountsByNumber = new LinkedHashMap<>();
+        this.nextAccountSequence = 1001;
+        this.keyboardInput = scanner;
         this.dummyAccount = new BankAccount(DUMMY_ACCOUNT_NUMBER);
         this.accountsByNumber.put(this.dummyAccount.getAccountNumber(), this.dummyAccount);
     }
@@ -80,8 +95,7 @@ public class MainMenu {
                 performTransfer(); 
                 break;
             case ADMIN_SELECTION:
-                AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput, accountsByNumber);
-                adminMenu.run();
+                performAdminMenu();
                 break;
             case 3:
                 performCheckBalance();
@@ -96,25 +110,69 @@ public class MainMenu {
     }
 
     public void performCheckBalance() {
-        System.out.println("Your balance is: " + getActiveAccount().getBalance());
+        System.out.println("Your balance is: $" + String.format("%.2f", getActiveAccount().getBalance()));
     }
 
     public void performDeposit() {
-        double depositAmount = -1;
-        while(depositAmount < 0) {
-            System.out.print("How much would you like to deposit: ");
-            depositAmount = keyboardInput.nextInt();
+        if (getActiveAccount().isFrozen()) {
+            System.out.println("This account is frozen. Unlock it before making a deposit.");
+            return;
         }
-        getActiveAccount().deposit(depositAmount);
+        double depositAmount = -1;
+        while (depositAmount < 0) {
+            System.out.print("How much would you like to deposit: ");
+            depositAmount = keyboardInput.nextDouble();
+        }
+
+        if (depositAmount == 0 || depositAmount > 5000) {
+            System.out.println("Deposit failed: amount must be greater than 0 and no more than $5000.");
+            return;
+        }
+
+        System.out.print("Confirm deposit of $" + String.format("%.2f", depositAmount) + "? (yes/no): ");
+        String confirmation = keyboardInput.next().trim();
+
+        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+            try {
+                getActiveAccount().deposit(depositAmount);
+                System.out.println("Deposit successful. New balance: $" + String.format("%.2f", getActiveAccountBalance()));
+            } catch (IllegalArgumentException e) {
+                System.out.println("Deposit failed: amount must be greater than 0 and no more than $5000.");
+            }
+        } else {
+            System.out.println("Deposit cancelled.");
+        }
     }
 
     public void performWithdrawal() {
-        double withdrawalAmount = -1;
-        while(withdrawalAmount < 0) {
-            System.out.print("How much would you like to withdraw: ");
-            withdrawalAmount = keyboardInput.nextInt();
+        if (getActiveAccount().isFrozen()) {
+            System.out.println("This account is frozen. Unlock it before making a withdrawal.");
+            return;
         }
-        getActiveAccount().withdraw(withdrawalAmount);
+        double withdrawalAmount = -1;
+        while (withdrawalAmount < 0) {
+            System.out.print("How much would you like to withdraw: ");
+            withdrawalAmount = keyboardInput.nextDouble();
+        }
+
+        if (withdrawalAmount == 0 || withdrawalAmount > 5000 || withdrawalAmount > getActiveAccountBalance()) {
+            System.out.println("Withdrawal failed: amount must be greater than 0, no more than $5000, and no more than your balance.");
+            return;
+        }
+
+        System.out.print("Confirm withdrawal of $" + String.format("%.2f", withdrawalAmount) + "? (yes/no): ");
+        String confirmation = keyboardInput.next().trim();
+
+        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+            try {
+                getActiveAccount().withdraw(withdrawalAmount);
+                System.out.println("Withdrawal successful. New balance: $" + String.format("%.2f", getActiveAccountBalance()));
+            } catch (IllegalArgumentException e) {
+                System.out.println("Withdrawal failed: amount must be greater than 0, no more than $5000, and no more than your balance.");
+            }
+        } else {
+            System.out.println("Withdrawal cancelled.");
+        }
     }
 
     public void performViewTransactionHistory() {
@@ -124,12 +182,97 @@ public class MainMenu {
             return;
         }
 
+        System.out.println("View history options:");
+        System.out.println("1. All");
+        System.out.println("2. Money IN (deposits/interest)");
+        System.out.println("3. Money OUT (withdrawals/fees)");
+        int categoryChoice = getUserSelection(3);
+
+        System.out.println("Sort options:");
+        System.out.println("1. No sorting (original order)");
+        System.out.println("2. Sort by $ amount (ascending)");
+        System.out.println("3. Sort by $ amount (descending)");
+        int sortChoice = getUserSelection(3);
+
+        List<String> filtered = new ArrayList<>();
+        for (String line : history) {
+            if (categoryChoice == 2 && !isMoneyInLine(line)) {
+                continue;
+            }
+            if (categoryChoice == 3 && !isMoneyOutLine(line)) {
+                continue;
+            }
+            filtered.add(line);
+        }
+
+        if (filtered.isEmpty()) {
+            System.out.println("No transactions found for that filter.");
+            return;
+        }
+
+        if (sortChoice != 1) {
+            sortHistoryByAmount(filtered, sortChoice == 3);
+        }
+
         System.out.println("Transaction History:");
-        for (int i = 0; i < history.size(); i++) {
-            System.out.println((i + 1) + ". " + history.get(i));
+        for (int i = 0; i < filtered.size(); i++) {
+            System.out.println((i + 1) + ". " + filtered.get(i));
         }
     }
-    private void performCreateAdditionalAccount() {
+
+    private static final Pattern AMOUNT_PATTERN = Pattern.compile("\\$\\s*([0-9]+(?:\\.[0-9]+)?)");
+
+    private static boolean isMoneyInLine(String line) {
+        if (line == null) {
+            return false;
+        }
+        return line.startsWith("Deposit:") || line.startsWith("Interest Payment:");
+    }
+
+    private static boolean isMoneyOutLine(String line) {
+        if (line == null) {
+            return false;
+        }
+        return line.startsWith("Withdrawal:") || line.startsWith("Fee Collected:");
+    }
+
+    private static Double extractAmount(String line) {
+        if (line == null) {
+            return null;
+        }
+        Matcher m = AMOUNT_PATTERN.matcher(line);
+        if (!m.find()) {
+            return null;
+        }
+        try {
+            return Double.parseDouble(m.group(1));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static void sortHistoryByAmount(List<String> lines, boolean descending) {
+        List<String> withAmount = new ArrayList<>();
+        List<String> withoutAmount = new ArrayList<>();
+        for (String line : lines) {
+            if (extractAmount(line) == null) {
+                withoutAmount.add(line);
+            } else {
+                withAmount.add(line);
+            }
+        }
+
+        Comparator<String> byAmount = Comparator.comparing(MainMenu::extractAmount);
+        if (descending) {
+            byAmount = byAmount.reversed();
+        }
+        Collections.sort(withAmount, byAmount);
+
+        lines.clear();
+        lines.addAll(withAmount);
+        lines.addAll(withoutAmount);
+    }
+    public void performCreateAdditionalAccount() {
         String number;
         do {
             number = String.format("ACC-%04d", nextAccountSequence++);
@@ -140,7 +283,7 @@ public class MainMenu {
         activeAccountNumber = created.getAccountNumber();
 
         System.out.println("Additional account created: " + created.getAccountNumber());
-        System.out.println("This account is now active. Balance: " + created.getBalance());
+        System.out.println("This account is now active. Balance: $" + String.format("%.2f", created.getBalance()));
     }
 
     public void run() {
@@ -159,22 +302,61 @@ public class MainMenu {
     }
 
     public void performTransfer() {
+        if (getActiveAccount().isFrozen()) {
+            System.out.println("This account is frozen. Unlock it before making a transfer.");
+            return;
+        }
         double amount = -1;
         while (amount < 0) {
             System.out.print("How much would you like to transfer to the dummy account?: ");
             amount = keyboardInput.nextDouble();
         }
 
+        if (amount == 0 || amount > 5000 || amount > getActiveAccountBalance()) {
+            System.out.println("Transfer failed: amount must be greater than 0, no more than $5000, and no more than your balance.");
+            return;
+        }
+
         try {
             getActiveAccount().transfer(dummyAccount, amount);
             System.out.println("Transfer completed. Destination: " + dummyAccount.getAccountNumber());
+            System.out.println("New balance: $" + String.format("%.2f", getActiveAccountBalance()));
         } catch (IllegalArgumentException e) {
-            System.out.println("Transfer failed: invalid amount or insufficient funds.");
+            System.out.println("Transfer failed: amount must be greater than 0, no more than $5000, and no more than your balance.");
         }
+    }
+
+    public void performAdminMenu() {
+        long now = System.currentTimeMillis();
+        if (now < adminLockoutEndTime) {
+            long secondsLeft = (adminLockoutEndTime - now) / 1000;
+            System.out.println("Admin Menu is locked. Please wait " + secondsLeft + " second(s) before trying again.");
+            return;
+        }
+
+        AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput, accountsByNumber);
+        if (adminMenu.authenticate()) {
+            adminMenu.run();
+        } else {
+            adminLockoutEndTime = System.currentTimeMillis() + (ADMIN_COOLDOWN_SECONDS * 1000);
+            System.out.println("Admin Menu locked for " + ADMIN_COOLDOWN_SECONDS + " seconds.");
+        }
+    }
+
+    public long getAdminLockoutEndTime() {
+        return adminLockoutEndTime;
+    }
+
+    public double getActiveAccountBalance() {
+        return getActiveAccount().getBalance();
     }
 
     public void performCloseAccount(){
         BankAccount activeAccount = getActiveAccount();
+        if (activeAccount.isFrozen()) {
+            System.out.println("Unable to close account. Account is frozen; unlock it first.");
+            return;
+        }
 
         try{
             activeAccount.closeAccount();
@@ -183,5 +365,7 @@ public class MainMenu {
             System.out.println("Unable to close account. Account already closed");
         }
     }
+
+
 
 }
