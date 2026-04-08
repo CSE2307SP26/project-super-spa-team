@@ -334,7 +334,7 @@ public class MainMenu {
             return;
         }
 
-        AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput);
+        AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput, accountsByNumber);
         if (adminMenu.authenticate()) {
             adminMenu.run();
         } else {

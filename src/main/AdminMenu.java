@@ -1,20 +1,23 @@
 package main;
 
+import java.util.Map;
 import java.util.Scanner;
 
 public class AdminMenu {
 
-    private static final int EXIT_SELECTION = 5;
-    private static final int MAX_SELECTION = 5;
+    private static final int EXIT_SELECTION = 6;
+    private static final int MAX_SELECTION = 6;
     private static final String ADMIN_PASSWORD = "admin123";
     private static final int MAX_PASSWORD_ATTEMPTS = 3;
 
     private BankAccount account;
+    private Map<String, BankAccount> allAccounts;
     private Scanner keyboardInput;
 
-    public AdminMenu(BankAccount account, Scanner keyboardInput) {
+    public AdminMenu(BankAccount account, Scanner keyboardInput, Map<String, BankAccount> allAccounts) {
         this.account = account;
         this.keyboardInput = keyboardInput;
+        this.allAccounts = allAccounts;
     }
 
     public boolean authenticate() {
@@ -37,9 +40,10 @@ public class AdminMenu {
 
         System.out.println("1. Collect fee from account");
         System.out.println("2. Add interest payment");
-        System.out.println("3. Freeze this account");
-        System.out.println("4. Unlock this account");
-        System.out.println("5. Return to main menu");
+        System.out.println("3. View all accounts summary");
+        System.out.println("4. Freeze this account");
+        System.out.println("5. Unlock this account");
+        System.out.println("6. Return to main menu");
     }
 
     public int getUserSelection(int max) {
@@ -60,12 +64,26 @@ public class AdminMenu {
                 performInterestPayment();
                 break;
             case 3:
-                performFreeze();
+                performViewAllAccounts();
                 break;
             case 4:
+                performFreeze();
+                break;
+            case 5:
                 performUnlock();
                 break;
         }
+    }
+
+    public void performViewAllAccounts() {
+        System.out.println("--- All Accounts Summary ---");
+        System.out.printf("%-15s %-12s %s%n", "Account Number", "Balance", "Status");
+        for (BankAccount acc : allAccounts.values()) {
+            String status = acc.isClosed() ? "Closed" : "Open";
+            System.out.printf("%-15s $%-11.2f %s%n",
+                acc.getAccountNumber(), acc.getBalance(), status);
+        }
+        System.out.println("----------------------------");
     }
 
     public void performCollection() {
