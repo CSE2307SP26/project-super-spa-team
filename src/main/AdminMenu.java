@@ -6,6 +6,8 @@ public class AdminMenu {
 
     private static final int EXIT_SELECTION = 3;
     private static final int MAX_SELECTION = 3;
+    private static final String ADMIN_PASSWORD = "admin123";
+    private static final int MAX_PASSWORD_ATTEMPTS = 3;
 
     private BankAccount account;
     private Scanner keyboardInput;
@@ -13,6 +15,21 @@ public class AdminMenu {
     public AdminMenu(BankAccount account, Scanner keyboardInput) {
         this.account = account;
         this.keyboardInput = keyboardInput;
+    }
+
+    public boolean authenticate() {
+        System.out.println("Admin Menu requires authentication.");
+        for (int attempt = 1; attempt <= MAX_PASSWORD_ATTEMPTS; attempt++) {
+            System.out.print("Enter admin password (attempt " + attempt + "/" + MAX_PASSWORD_ATTEMPTS + "): ");
+            String input = keyboardInput.next();
+            if (ADMIN_PASSWORD.equals(input)) {
+                System.out.println("Access granted.");
+                return true;
+            }
+            System.out.println("Incorrect password.");
+        }
+        System.out.println("Access denied. Too many failed attempts.");
+        return false;
     }
 
     public void displayOptions() {
@@ -47,18 +64,28 @@ public class AdminMenu {
         double feeAmount = -1;
         while (feeAmount < 0 || feeAmount > account.getBalance()) {
             System.out.print("Enter fee amount to collect: ");
-            feeAmount = keyboardInput.nextInt();
+            feeAmount = keyboardInput.nextDouble();
         }
-        account.collectFee(feeAmount);
+        try {
+            account.collectFee(feeAmount);
+            System.out.println("Fee collection successful. New balance: $" + String.format("%.2f", account.getBalance()));
+        } catch (IllegalArgumentException e) {
+            System.out.println("Fee collection failed.");
+        }
     }
 
     public void performInterestPayment() {
         double amount = -1;
         while (amount < 0) {
             System.out.print("Enter interest payment amount: ");
-            amount = keyboardInput.nextInt();
+            amount = keyboardInput.nextDouble();
         }
-        account.addInterest(amount);
+        try {
+            account.addInterest(amount);
+            System.out.println("Interest payment successful. New balance: $" + String.format("%.2f", account.getBalance()));
+        } catch (IllegalArgumentException e) {
+            System.out.println("Interest payment failed.");
+        }
     }
 
     public void run() {
