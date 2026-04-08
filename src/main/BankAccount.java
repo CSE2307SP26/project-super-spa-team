@@ -16,6 +16,7 @@ public class BankAccount {
     private final List<String> transactionHistory;
     private boolean closed;
     private static final double maxTransactionLimit = 5000.0;
+    private String nickname;
     private boolean frozen;
     private String code;
 
@@ -35,6 +36,19 @@ public class BankAccount {
 
     public String getAccountNumber() {
         return accountNumber;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = (nickname == null || nickname.isBlank()) ? null : nickname.trim();
+    }
+
+    public String getDisplayName() {
+        if (nickname == null) return accountNumber;
+        return nickname + " (" + accountNumber + ")";
     }
 
     public void deposit(double amount) {

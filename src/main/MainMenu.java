@@ -56,7 +56,7 @@ public class MainMenu {
 
     public void displayOptions() {
         System.out.println("Welcome to the 237 Bank App!");
-        System.out.println("Active account: " + activeAccountNumber);
+        System.out.println("Active account: " + getActiveAccount().getDisplayName());
 
         System.out.println("1. Make a deposit");
 
@@ -101,7 +101,7 @@ public class MainMenu {
                 performCheckBalance();
                 break;
             case 5:
-                performCreateAdditionalAccount();
+                performCreateAdditionalAccount(true);
                 break;
             case CLOSE_ACCOUNT_SELECTION:
                 performCloseAccount();
@@ -272,7 +272,8 @@ public class MainMenu {
         lines.addAll(withAmount);
         lines.addAll(withoutAmount);
     }
-    public void performCreateAdditionalAccount() {
+
+    public void performCreateAdditionalAccount(boolean consumeNewline) {
         String number;
         do {
             number = String.format("ACC-%04d", nextAccountSequence++);
@@ -282,12 +283,19 @@ public class MainMenu {
         accountsByNumber.put(created.getAccountNumber(), created);
         activeAccountNumber = created.getAccountNumber();
 
-        System.out.println("Additional account created: " + created.getAccountNumber());
+        System.out.print("Enter a nickname for this account (or press Enter to skip): ");
+        if (consumeNewline) {
+            keyboardInput.nextLine();
+        }
+        String nick = keyboardInput.nextLine();
+        created.setNickname(nick);
+
+        System.out.println("Additional account created: " + created.getDisplayName());
         System.out.println("This account is now active. Balance: $" + String.format("%.2f", created.getBalance()));
     }
 
     public void run() {
-        performCreateAdditionalAccount();
+        performCreateAdditionalAccount(false);
         int selection = -1;
         while(selection != EXIT_SELECTION) {
             displayOptions();
@@ -360,7 +368,7 @@ public class MainMenu {
 
         try{
             activeAccount.closeAccount();
-            System.out.println("Closed Account " + activeAccount.getAccountNumber());
+            System.out.println("Closed Account " + activeAccount.getDisplayName());
         } catch (IllegalArgumentException e){
             System.out.println("Unable to close account. Account already closed");
         }

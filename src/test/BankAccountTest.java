@@ -228,6 +228,40 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testSetAndGetNickname() {
+        BankAccount account = new BankAccount("ACC-1001");
+        account.setNickname("Savings");
+        assertEquals("Savings", account.getNickname());
+    }
+
+    @Test
+    public void testGetDisplayNameWithNickname() {
+        BankAccount account = new BankAccount("ACC-1001");
+        account.setNickname("Savings");
+        assertEquals("Savings (ACC-1001)", account.getDisplayName());
+    }
+
+    @Test
+    public void testGetDisplayNameWithoutNickname() {
+        BankAccount account = new BankAccount("ACC-1001");
+        assertEquals("ACC-1001", account.getDisplayName());
+    }
+
+    @Test
+    public void testSetNicknameBlankIsIgnored() {
+        BankAccount account = new BankAccount("ACC-1001");
+        account.setNickname("   ");
+        assertEquals(null, account.getNickname());
+    }
+
+    @Test
+    public void testSetNicknameTrimsWhitespace() {
+        BankAccount account = new BankAccount("ACC-1001");
+        account.setNickname("  Checking  ");
+        assertEquals("Checking", account.getNickname());
+    }
+
+    @Test
     public void testDepositingOverMaxLimit(){
         BankAccount account = new BankAccount("1");
 
