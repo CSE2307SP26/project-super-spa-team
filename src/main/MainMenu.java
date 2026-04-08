@@ -15,24 +15,35 @@ public class MainMenu {
 
     private static final int VIEW_HISTORY_SELECTION = 4;
     private static final int WITHDRAWAL_SELECTION = 2;
-    private static final int TRANSFER_SELECTION = 6;
-    private static final int FREEZE_UNLOCK_SELECTION = 8;
+    private static final int TRANSFER_SELECTION = 7;
     private static final int EXIT_SELECTION = 9;
     private static final int ADMIN_SELECTION = 10;
     private static final int MAX_SELECTION = 10;
-    private static final int CLOSE_ACCOUNT_SELECTION = 7;
+    private static final int CLOSE_ACCOUNT_SELECTION = 8;
     private static final String DUMMY_ACCOUNT_NUMBER = "DUMMY-ACC";
+    private static final int ADMIN_COOLDOWN_SECONDS = 10;
+
+ private static final int SWITCH_ACTIVE_ACCOUNT_SELECTION = 6;
 
     private Scanner keyboardInput;
     private final Map<String, BankAccount> accountsByNumber;
     private String activeAccountNumber;
     private int nextAccountSequence;
     private final BankAccount dummyAccount;
+    private long adminLockoutEndTime = 0;
 
     public MainMenu() {
         this.accountsByNumber = new LinkedHashMap<>();
         this.nextAccountSequence = 1001;
         this.keyboardInput = new Scanner(System.in);
+        this.dummyAccount = new BankAccount(DUMMY_ACCOUNT_NUMBER);
+        this.accountsByNumber.put(this.dummyAccount.getAccountNumber(), this.dummyAccount);
+    }
+
+    public MainMenu(Scanner scanner) {
+        this.accountsByNumber = new LinkedHashMap<>();
+        this.nextAccountSequence = 1001;
+        this.keyboardInput = scanner;
         this.dummyAccount = new BankAccount(DUMMY_ACCOUNT_NUMBER);
         this.accountsByNumber.put(this.dummyAccount.getAccountNumber(), this.dummyAccount);
     }
@@ -45,9 +56,13 @@ public class MainMenu {
         return active;
     }
 
+    public String getActiveAccountNumber() {
+        return activeAccountNumber;
+    }
+
     public void displayOptions() {
         System.out.println("Welcome to the 237 Bank App!");
-        System.out.println("Active account: " + activeAccountNumber);
+        System.out.println("Active account: " + getActiveAccount().getDisplayName());
 
         System.out.println("1. Make a deposit");
 
@@ -55,9 +70,9 @@ public class MainMenu {
         System.out.println("3. Check Balance");
         System.out.println("4. View Transaction History");
         System.out.println("5. Create additional account");
-        System.out.println("6. Transfer money to dummy account");
-        System.out.println("7. Close current account");
-        System.out.println("8. Freeze/Unlock an account");
+        System.out.println("6. Switch active account");
+        System.out.println("7. Transfer money to dummy account");
+        System.out.println("8. Close current account");
         System.out.println("9. Exit the app");
         System.out.println("10. Admin Menu");
 
@@ -86,27 +101,25 @@ public class MainMenu {
             case TRANSFER_SELECTION:
                 performTransfer(); 
                 break;
-            case FREEZE_UNLOCK_SELECTION:
-                performFreezeOrUnlock();
-                break;
             case ADMIN_SELECTION:
-                AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput);
-                adminMenu.run();
+                performAdminMenu();
                 break;
             case 3:
                 performCheckBalance();
                 break;
             case 5:
-                performCreateAdditionalAccount();
+                performCreateAdditionalAccount(true);
                 break;
             case CLOSE_ACCOUNT_SELECTION:
                 performCloseAccount();
                 break;
+            case SWITCH_ACTIVE_ACCOUNT_SELECTION:
+                performSwitchActiveAccount();
         }
     }
 
     public void performCheckBalance() {
-        System.out.println("Your balance is: " + getActiveAccount().getBalance());
+        System.out.println("Your balance is: $" + String.format("%.2f", getActiveAccount().getBalance()));
     }
 
     public void performDeposit() {
@@ -115,15 +128,28 @@ public class MainMenu {
             return;
         }
         double depositAmount = -1;
-        while(depositAmount < 0) {
+        while (depositAmount < 0) {
             System.out.print("How much would you like to deposit: ");
-            depositAmount = keyboardInput.nextInt();
+            depositAmount = keyboardInput.nextDouble();
         }
-        try {
-            getActiveAccount().deposit(depositAmount);
-            System.out.println("Deposit successful.");
-        } catch (IllegalArgumentException e) {
+
+        if (depositAmount == 0 || depositAmount > 5000) {
             System.out.println("Deposit failed: amount must be greater than 0 and no more than $5000.");
+            return;
+        }
+
+        System.out.print("Confirm deposit of $" + String.format("%.2f", depositAmount) + "? (yes/no): ");
+        String confirmation = keyboardInput.next().trim();
+
+        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+            try {
+                getActiveAccount().deposit(depositAmount);
+                System.out.println("Deposit successful. New balance: $" + String.format("%.2f", getActiveAccountBalance()));
+            } catch (IllegalArgumentException e) {
+                System.out.println("Deposit failed: amount must be greater than 0 and no more than $5000.");
+            }
+        } else {
+            System.out.println("Deposit cancelled.");
         }
     }
 
@@ -133,15 +159,28 @@ public class MainMenu {
             return;
         }
         double withdrawalAmount = -1;
-        while(withdrawalAmount < 0) {
+        while (withdrawalAmount < 0) {
             System.out.print("How much would you like to withdraw: ");
-            withdrawalAmount = keyboardInput.nextInt();
+            withdrawalAmount = keyboardInput.nextDouble();
         }
-        try {
-            getActiveAccount().withdraw(withdrawalAmount);
-            System.out.println("Withdrawal successful.");
-        } catch (IllegalArgumentException e) {
-        System.out.println("Withdrawal failed: amount must be greater than 0, no more than $5000, and no more than your balance.");
+
+        if (withdrawalAmount == 0 || withdrawalAmount > 5000 || withdrawalAmount > getActiveAccountBalance()) {
+            System.out.println("Withdrawal failed: amount must be greater than 0, no more than $5000, and no more than your balance.");
+            return;
+        }
+
+        System.out.print("Confirm withdrawal of $" + String.format("%.2f", withdrawalAmount) + "? (yes/no): ");
+        String confirmation = keyboardInput.next().trim();
+
+        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+            try {
+                getActiveAccount().withdraw(withdrawalAmount);
+                System.out.println("Withdrawal successful. New balance: $" + String.format("%.2f", getActiveAccountBalance()));
+            } catch (IllegalArgumentException e) {
+                System.out.println("Withdrawal failed: amount must be greater than 0, no more than $5000, and no more than your balance.");
+            }
+        } else {
+            System.out.println("Withdrawal cancelled.");
         }
     }
 
@@ -242,7 +281,8 @@ public class MainMenu {
         lines.addAll(withAmount);
         lines.addAll(withoutAmount);
     }
-    private void performCreateAdditionalAccount() {
+
+    public void performCreateAdditionalAccount(boolean consumeNewline) {
         String number;
         do {
             number = String.format("ACC-%04d", nextAccountSequence++);
@@ -252,12 +292,19 @@ public class MainMenu {
         accountsByNumber.put(created.getAccountNumber(), created);
         activeAccountNumber = created.getAccountNumber();
 
-        System.out.println("Additional account created: " + created.getAccountNumber());
-        System.out.println("This account is now active. Balance: " + created.getBalance());
+        System.out.print("Enter a nickname for this account (or press Enter to skip): ");
+        if (consumeNewline) {
+            keyboardInput.nextLine();
+        }
+        String nick = keyboardInput.nextLine();
+        created.setNickname(nick);
+
+        System.out.println("Additional account created: " + created.getDisplayName());
+        System.out.println("This account is now active. Balance: $" + String.format("%.2f", created.getBalance()));
     }
 
     public void run() {
-        performCreateAdditionalAccount();
+        performCreateAdditionalAccount(false);
         int selection = -1;
         while(selection != EXIT_SELECTION) {
             displayOptions();
@@ -282,12 +329,43 @@ public class MainMenu {
             amount = keyboardInput.nextDouble();
         }
 
+        if (amount == 0 || amount > 5000 || amount > getActiveAccountBalance()) {
+            System.out.println("Transfer failed: amount must be greater than 0, no more than $5000, and no more than your balance.");
+            return;
+        }
+
         try {
             getActiveAccount().transfer(dummyAccount, amount);
             System.out.println("Transfer completed. Destination: " + dummyAccount.getAccountNumber());
+            System.out.println("New balance: $" + String.format("%.2f", getActiveAccountBalance()));
         } catch (IllegalArgumentException e) {
-            System.out.println("Transfer failed: invalid amount or insufficient funds.");
+            System.out.println("Transfer failed: amount must be greater than 0, no more than $5000, and no more than your balance.");
         }
+    }
+
+    public void performAdminMenu() {
+        long now = System.currentTimeMillis();
+        if (now < adminLockoutEndTime) {
+            long secondsLeft = (adminLockoutEndTime - now) / 1000;
+            System.out.println("Admin Menu is locked. Please wait " + secondsLeft + " second(s) before trying again.");
+            return;
+        }
+
+        AdminMenu adminMenu = new AdminMenu(getActiveAccount(), keyboardInput, accountsByNumber);
+        if (adminMenu.authenticate()) {
+            adminMenu.run();
+        } else {
+            adminLockoutEndTime = System.currentTimeMillis() + (ADMIN_COOLDOWN_SECONDS * 1000);
+            System.out.println("Admin Menu locked for " + ADMIN_COOLDOWN_SECONDS + " seconds.");
+        }
+    }
+
+    public long getAdminLockoutEndTime() {
+        return adminLockoutEndTime;
+    }
+
+    public double getActiveAccountBalance() {
+        return getActiveAccount().getBalance();
     }
 
     public void performCloseAccount(){
@@ -299,94 +377,48 @@ public class MainMenu {
 
         try{
             activeAccount.closeAccount();
-            System.out.println("Closed Account " + activeAccount.getAccountNumber());
+            System.out.println("Closed Account " + activeAccount.getDisplayName());
         } catch (IllegalArgumentException e){
             System.out.println("Unable to close account. Account already closed");
         }
     }
 
-    private void performFreezeOrUnlock() {
-        System.out.println("1. Freeze an account");
-        System.out.println("2. Unlock an account");
-        System.out.println("3. Cancel");
+    public void performSwitchActiveAccount(){
+        // create list of accounts the user can select
+        List<BankAccount> selectableAccounts = new ArrayList<>();
 
-        int choice = getUserSelection(3);
-        if (choice == 3) {
-            return;
-        }
-
-        if (choice == 1) {
-            BankAccount selected = promptSelectAccount("Select an account to freeze:");
-            if (selected == null) {
-                return;
+        for (BankAccount account : accountsByNumber.values()) {
+            
+            if (!account.getAccountNumber().equals(DUMMY_ACCOUNT_NUMBER) && !account.isClosed() && !account.getAccountNumber().equals(activeAccountNumber)) {        
+                selectableAccounts.add(account);
             }
-            if (selected.isClosed()) {
-                System.out.println("That account is closed and cannot be frozen.");
-                return;
-            }
-            String code = selected.freeze();
-            System.out.println("Account frozen: " + selected.getAccountNumber());
-            System.out.println("Unlock code: " + code);
-            return;
-        }
+       }
 
-        BankAccount selected = promptSelectAccount("Select an account to unlock:");
-        if (selected == null) {
-            return;
-        }
-        if (!selected.isFrozen()) {
-            System.out.println("That account is not frozen.");
-            return;
-        }
+       if (selectableAccounts.isEmpty()){
+        System.out.println("There are no accounts available to switch to.");
+        return;
+       }
 
-        System.out.print("Enter unlock code: ");
-        String attempt = keyboardInput.next();
-        boolean unlocked = selected.unlock(attempt);
-        if (unlocked) {
-            System.out.println("Account unlocked: " + selected.getAccountNumber());
-        } else {
-            System.out.println("Unlock failed: code did not match.");
-        }
-    }
+       System.out.println("Select an account to switch to and make active:");
+       
+       int num = 1;
+       for( BankAccount accountOption : selectableAccounts){
+            System.out.println(num + ". " + accountOption.getDisplayName());
+            num +=1; 
+       }
 
-    private BankAccount promptSelectAccount(String prompt) {
-        List<BankAccount> selectable = new ArrayList<>();
-        for (BankAccount acct : accountsByNumber.values()) {
-            if (acct == null) {
-                continue;
-            }
-            if (DUMMY_ACCOUNT_NUMBER.equals(acct.getAccountNumber())) {
-                continue;
-            }
-            selectable.add(acct);
-        }
-
-        if (selectable.isEmpty()) {
-            System.out.println("No accounts available.");
-            return null;
-        }
-
-        System.out.println(prompt);
-        for (int i = 0; i < selectable.size(); i++) {
-            BankAccount acct = selectable.get(i);
-            StringBuilder label = new StringBuilder(acct.getAccountNumber());
-            if (acct.getAccountNumber().equals(activeAccountNumber)) {
-                label.append(" (active)");
-            }
-            if (acct.isClosed()) {
-                label.append(" (closed)");
-            } else if (acct.isFrozen()) {
-                label.append(" (frozen)");
-            }
-            System.out.println((i + 1) + ". " + label);
-        }
-
-        int selection = -1;
-        while (selection < 1 || selection > selectable.size()) {
-            System.out.print("Please make a selection: ");
+       int selection = -1;
+        
+       while (selection < 1 || selection > selectableAccounts.size()) {
+            System.out.print("Enter the number of the account you want to make active: ");
             selection = keyboardInput.nextInt();
         }
-        return selectable.get(selection - 1);
-    }
+
+        BankAccount selectedAccount = selectableAccounts.get(selection - 1);
+        activeAccountNumber = selectedAccount.getAccountNumber();
+
+        System.out.println("Active account switched to: " + selectedAccount.getDisplayName());
+
+    }   
 
 }

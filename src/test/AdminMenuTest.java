@@ -17,7 +17,7 @@ public class AdminMenuTest {
     public void testAuthenticateSuccessOnFirstAttempt() {
         BankAccount account = new BankAccount("TEST-ADMIN");
         Scanner scanner = new Scanner(new ByteArrayInputStream("admin123\n".getBytes()));
-        AdminMenu adminMenu = new AdminMenu(account, scanner);
+        AdminMenu adminMenu = new AdminMenu(account, scanner, new java.util.HashMap<>());
         assertTrue(adminMenu.authenticate());
     }
 
@@ -25,7 +25,7 @@ public class AdminMenuTest {
     public void testAuthenticateSuccessOnSecondAttempt() {
         BankAccount account = new BankAccount("TEST-ADMIN");
         Scanner scanner = new Scanner(new ByteArrayInputStream("wrongpass\nadmin123\n".getBytes()));
-        AdminMenu adminMenu = new AdminMenu(account, scanner);
+        AdminMenu adminMenu = new AdminMenu(account, scanner, new java.util.HashMap<>());
         assertTrue(adminMenu.authenticate());
     }
 
@@ -33,7 +33,7 @@ public class AdminMenuTest {
     public void testAuthenticateSuccessOnThirdAttempt() {
         BankAccount account = new BankAccount("TEST-ADMIN");
         Scanner scanner = new Scanner(new ByteArrayInputStream("wrong1\nwrong2\nadmin123\n".getBytes()));
-        AdminMenu adminMenu = new AdminMenu(account, scanner);
+        AdminMenu adminMenu = new AdminMenu(account, scanner, new java.util.HashMap<>());
         assertTrue(adminMenu.authenticate());
     }
 
@@ -41,7 +41,7 @@ public class AdminMenuTest {
     public void testAuthenticateFailureAfterThreeWrongAttempts() {
         BankAccount account = new BankAccount("TEST-ADMIN");
         Scanner scanner = new Scanner(new ByteArrayInputStream("wrong1\nwrong2\nwrong3\n".getBytes()));
-        AdminMenu adminMenu = new AdminMenu(account, scanner);
+        AdminMenu adminMenu = new AdminMenu(account, scanner, new java.util.HashMap<>());
         assertFalse(adminMenu.authenticate());
     }
 
@@ -49,7 +49,7 @@ public class AdminMenuTest {
     public void testAuthenticateIsCaseSensitive() {
         BankAccount account = new BankAccount("TEST-ADMIN");
         Scanner scanner = new Scanner(new ByteArrayInputStream("Admin123\nADMIN123\nadmin123\n".getBytes()));
-        AdminMenu adminMenu = new AdminMenu(account, scanner);
+        AdminMenu adminMenu = new AdminMenu(account, scanner, new java.util.HashMap<>());
         assertTrue(adminMenu.authenticate());
     }
 
