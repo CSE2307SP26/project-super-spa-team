@@ -1,6 +1,5 @@
 package test;
 
-import main.BankAccount;
 import main.MainMenu;
 
 import static org.junit.Assert.assertEquals;
@@ -41,7 +40,7 @@ public class MainMenuTest {
 
     @Test
     public void testAdminMenuNotLockedAfterSuccessfulLogin() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("\nadmin123\n5\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\nadmin123\n6\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
         menu.performCreateAdditionalAccount(false);
         menu.performAdminMenu();
