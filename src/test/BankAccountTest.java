@@ -3,6 +3,7 @@ package test;
 import main.BankAccount;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -260,5 +261,107 @@ public class BankAccountTest {
         assertEquals("Checking", account.getNickname());
     }
 
+    @Test
+    public void testDepositingOverMaxLimit(){
+        BankAccount account = new BankAccount("1");
+
+        try{
+            account.deposit(5001);
+            fail(); // depositng 5001 should be illegal
+        } catch (IllegalArgumentException e){
+        //do nothing, test passes
+        }
+    }
+
+    @Test
+    public void testWithdrawingOverMaxLimit(){
+        BankAccount account = new BankAccount("1");
+        account.deposit(4000);
+        account.deposit(4000);
+
+        try{
+            account.withdraw(5001);
+            fail(); // withdrawing 5001 should be illegal
+        } catch (IllegalArgumentException e){
+        //do nothing, test passes
+        }
+    }
+
+    @Test
+    public void testTransferringOverMaxLimit(){
+        BankAccount source = new BankAccount("1");
+        BankAccount recipient = new BankAccount("2");
+        
+        source.deposit(4000);
+        source.deposit(4000);
+
+        try{
+            source.transfer(recipient, 5001);
+            fail(); // transferring 5001 should be illegal
+        } catch (IllegalArgumentException e){
+        //do nothing, test passes
+        }
+    }
+
+    @Test
+    public void testFreezeAndIsFrozen() {
+        BankAccount account = new BankAccount("1");
+        assertFalse(account.isFrozen());
+        
+        String code = account.freeze();
+        
+        assertTrue(account.isFrozen());
+        assertTrue(code != null && code.length() == 6);
+        
+        // freezing again should return the same code
+        String code2 = account.freeze();
+        assertEquals(code, code2);
+    }
+
+    @Test
+    public void testUnlockWithCorrectCode() {
+        BankAccount account = new BankAccount("1");
+        String code = account.freeze();
+        
+        boolean result = account.unlock(code);
+        
+        assertTrue(result);
+        assertFalse(account.isFrozen());
+    }
+
+    @Test
+    public void testUnlockWithIncorrectCode() {
+        BankAccount account = new BankAccount("1");
+        account.freeze();
+        
+        boolean result = account.unlock("WRONG!");
+        
+        assertFalse(result);
+        assertTrue(account.isFrozen());
+    }
+
+    @Test
+    public void testUnlockWithNullOrEmptyCode() {
+        BankAccount account = new BankAccount("1");
+        account.freeze();
+        
+        assertFalse(account.unlock(null));
+        assertFalse(account.unlock(""));
+        assertFalse(account.unlock("   "));
+        assertTrue(account.isFrozen());
+    }
+
+    @Test
+    public void testFreezeOnClosedAccountThrows() {
+        BankAccount account = new BankAccount("1");
+        account.closeAccount();
+        
+        try {
+            account.freeze();
+            fail();
+        } catch (IllegalStateException e) {
+            // pass
+        }
+    }
 
 }
