@@ -40,7 +40,7 @@ public class MainMenuTest {
 
     @Test
     public void testAdminMenuNotLockedAfterSuccessfulLogin() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("\nadmin123\n5\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\nadmin123\n6\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
         menu.performCreateAdditionalAccount(false);
         menu.performAdminMenu();
@@ -83,6 +83,48 @@ public class MainMenuTest {
         menu.performDeposit();
         menu.performWithdrawal();
         assertEquals(50.0, menu.getActiveAccountBalance(), 0.01);
+    }
+
+    @Test
+    public void testSwitchActiveAccountValid() {
+        Scanner scanner = new Scanner(new ByteArrayInputStream(
+            ("Checking\n" +     // nickname for first account
+            "100\nyes\n" +     // deposit into first account
+            "Savings\n" +    // nickname for second account
+            "200\nyes\n" +     // deposit into second account
+            "1\n").getBytes()  // switch back to first account
+        ));
+
+        MainMenu menu = new MainMenu(scanner);
+
+        menu.performCreateAdditionalAccount(false);
+        menu.performDeposit();
+
+        menu.performCreateAdditionalAccount(true);
+        menu.performDeposit();
+
+        menu.performSwitchActiveAccount();
+
+        assertEquals(100.0, menu.getActiveAccountBalance(), 0.01);
+    }
+
+    @Test
+    public void testSwitchAccountsWithNoneAvailable() {
+        
+        Scanner scanner = new Scanner(new ByteArrayInputStream(
+            ("Checking\n").getBytes()
+        ));
+
+        MainMenu menu = new MainMenu(scanner);
+        menu.performCreateAdditionalAccount(false);
+
+        String beforeAccount = menu.getActiveAccountNumber();
+
+        menu.performSwitchActiveAccount();
+
+        String afterAccount = menu.getActiveAccountNumber();
+
+        assertEquals(beforeAccount, afterAccount);
     }
 
 }
