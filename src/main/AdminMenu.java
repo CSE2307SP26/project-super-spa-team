@@ -5,8 +5,8 @@ import java.util.Scanner;
 
 public class AdminMenu {
 
-    private static final int EXIT_SELECTION = 6;
-    private static final int MAX_SELECTION = 6;
+    private static final int EXIT_SELECTION = 7;
+    private static final int MAX_SELECTION = 7;
     private static final String ADMIN_PASSWORD = "admin123";
     private static final int MAX_PASSWORD_ATTEMPTS = 3;
 
@@ -43,7 +43,8 @@ public class AdminMenu {
         System.out.println("3. View all accounts summary");
         System.out.println("4. Freeze this account");
         System.out.println("5. Unlock this account");
-        System.out.println("6. Return to main menu");
+        System.out.println("6. Apply minimum balance fees");
+        System.out.println("7. Return to main menu");
     }
 
     public int getUserSelection(int max) {
@@ -71,6 +72,9 @@ public class AdminMenu {
                 break;
             case 5:
                 performUnlock();
+                break;
+            case 6:
+                performApplyMinimumBalanceFees();
                 break;
         }
     }
@@ -140,6 +144,25 @@ public class AdminMenu {
             System.out.println("Account unlocked: " + account.getAccountNumber());
         } else {
             System.out.println("Unlock failed: code did not match.");
+        }
+    }
+
+    public void performApplyMinimumBalanceFees() {
+        int feeCount = 0;
+        for (BankAccount acc : allAccounts.values()) {
+            if (acc.isClosed() || acc.isFrozen()) {
+                continue;
+            }
+            if (acc.isBelowMinimumBalance()) {
+                acc.applyMinimumBalanceFee();
+                System.out.println("Notice: " + acc.getDisplayName()
+                    + " charged a $25.00 minimum balance fee. New balance: $"
+                    + String.format("%.2f", acc.getBalance()));
+                feeCount++;
+            }
+        }
+        if (feeCount == 0) {
+            System.out.println("No accounts are below the minimum balance.");
         }
     }
 

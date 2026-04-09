@@ -11,6 +11,9 @@ public class BankAccount {
     private static final SecureRandom RNG = new SecureRandom();
     private static final char[] UNLOCK_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".toCharArray();
 
+    static final double MINIMUM_BALANCE = 100.0;
+    static final double MINIMUM_BALANCE_FEE = 25.0;
+
     private final String accountNumber;
     private double balance;
     private final List<String> transactionHistory;
@@ -19,6 +22,7 @@ public class BankAccount {
     private String nickname;
     private boolean frozen;
     private String code;
+    private boolean hasMetMinimumBalance;
 
     public BankAccount(String accountNumber) {
         String id = Objects.requireNonNull(accountNumber, "accountNumber").trim();
@@ -32,6 +36,7 @@ public class BankAccount {
         this.closed = false;
         this.frozen = false;
         this.code = null;
+        this.hasMetMinimumBalance = false;
     }
 
     public String getAccountNumber() {
@@ -55,6 +60,9 @@ public class BankAccount {
         if (amount > 0 && amount <= maxTransactionLimit) {
             this.balance += amount;
             this.transactionHistory.add("Deposit: $" + String.format("%.2f", amount));
+            if (this.balance >= MINIMUM_BALANCE) {
+                this.hasMetMinimumBalance = true;
+            }
         } else {
             throw new IllegalArgumentException();
         }
@@ -90,6 +98,9 @@ public class BankAccount {
         if (amount > 0) {
             this.balance += amount;
             this.transactionHistory.add("Interest Payment: $" + String.format("%.2f", amount));
+            if (this.balance >= MINIMUM_BALANCE) {
+                this.hasMetMinimumBalance = true;
+            }
         } else {
             throw new IllegalArgumentException();
         }
@@ -163,6 +174,22 @@ public class BankAccount {
         this.code = null;
         this.transactionHistory.add("Account unlocked: " + this.accountNumber);
         return true;
+    }
+
+    public boolean isBelowMinimumBalance() {
+        return hasMetMinimumBalance && this.balance < MINIMUM_BALANCE;
+    }
+
+    public void applyMinimumBalanceFee() {
+        if (this.closed) {
+            throw new IllegalStateException("Cannot apply fee to a closed account.");
+        }
+        if (!isBelowMinimumBalance()) {
+            return;
+        }
+        double fee = Math.min(MINIMUM_BALANCE_FEE, this.balance);
+        this.balance -= fee;
+        this.transactionHistory.add("Minimum Balance Fee: $" + String.format("%.2f", MINIMUM_BALANCE_FEE));
     }
 
     public void closeAccount(){
