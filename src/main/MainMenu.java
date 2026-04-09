@@ -299,6 +299,10 @@ public class MainMenu {
         String nick = keyboardInput.nextLine();
         created.setNickname(nick);
 
+        System.out.print("Set a password for this account (min 4 characters): ");
+        String pass = keyboardInput.nextLine();
+        created.setPassword(pass);
+
         System.out.println("Additional account created: " + created.getDisplayName());
         System.out.println("This account is now active. Balance: $" + String.format("%.2f", created.getBalance()));
     }
@@ -415,6 +419,14 @@ public class MainMenu {
         }
 
         BankAccount selectedAccount = selectableAccounts.get(selection - 1);
+
+        System.out.print("Enter password for " + selectedAccount.getDisplayName() + ": ");
+        String passAttempt = keyboardInput.next();
+        if (!selectedAccount.authenticate(passAttempt)) {
+            System.out.println("Incorrect password. Switch cancelled.");
+            return;
+        }
+
         activeAccountNumber = selectedAccount.getAccountNumber();
 
         System.out.println("Active account switched to: " + selectedAccount.getDisplayName());

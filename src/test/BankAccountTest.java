@@ -364,4 +364,81 @@ public class BankAccountTest {
         }
     }
 
+    @Test
+    public void testSetPasswordAndAuthenticate() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.setPassword("secure1234");
+        assertTrue(account.authenticate("secure1234"));
+    }
+
+    @Test
+    public void testAuthenticateWithWrongPassword() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.setPassword("secure1234");
+        assertFalse(account.authenticate("wrongpass"));
+    }
+
+    @Test
+    public void testAuthenticateWithNoPasswordSet() {
+        BankAccount account = new BankAccount("TEST-1");
+        assertTrue(account.authenticate("anything"));
+    }
+
+    @Test
+    public void testSetPasswordRejectsNull() {
+        BankAccount account = new BankAccount("TEST-1");
+        try {
+            account.setPassword(null);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // do nothing, test passes
+        }
+    }
+
+    @Test
+    public void testSetPasswordRejectsBlank() {
+        BankAccount account = new BankAccount("TEST-1");
+        try {
+            account.setPassword("   ");
+            fail();
+        } catch (IllegalArgumentException e) {
+            // do nothing, test passes
+        }
+    }
+
+    @Test
+    public void testSetPasswordRejectsTooShort() {
+        BankAccount account = new BankAccount("TEST-1");
+        try {
+            account.setPassword("ab");
+            fail();
+        } catch (IllegalArgumentException e) {
+            // do nothing, test passes
+        }
+    }
+
+    @Test
+    public void testSetPasswordTrimsWhitespace() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.setPassword("  mypass  ");
+        assertTrue(account.authenticate("mypass"));
+    }
+
+    @Test
+    public void testAuthenticateWithNullAttempt() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.setPassword("secure1234");
+        assertFalse(account.authenticate(null));
+    }
+
+    @Test
+    public void testAuthenticateIsCaseSensitive() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.setPassword("Pass123");
+        assertFalse(account.authenticate("pass123"));
+        assertFalse(account.authenticate("PASS123"));
+        assertTrue(account.authenticate("Pass123"));
+    }
+
 }
+
