@@ -29,6 +29,16 @@ Iteration 2:
 7. Feature for Account Naming
 8. Freezing an Account (Admin Feature)
 
+Iteration 3:
+1. Password Protect User Accounts when Switching Accounts
+2. Add Account Types (Checking, Savings, etc.)
+3. Feature for user paying off a loan
+4. Add a Minimum Balance Fee
+5. Feature for adding an Admin Log
+6. Add Reward Cashbacks for Deposits (ex. $5 for $100 deposit)
+7. Add Multiple Tiers of Accounts dependent on Account Value
+8. User can Request a Loan
+
 ## What user stories do you intend to complete next iteration?
 We completed all user stories.
 ## Is there anything that you implemented but doesn't currently work?
