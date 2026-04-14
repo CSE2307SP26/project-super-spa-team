@@ -10,15 +10,19 @@ public class BankAccount {
 
     private static final SecureRandom RNG = new SecureRandom();
     private static final char[] UNLOCK_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".toCharArray();
+    private static final double MAX_TRANSACTION_LIMIT = 5000.0;
+
+    static final double MINIMUM_BALANCE = 100.0;
+    static final double MINIMUM_BALANCE_FEE = 25.0;
 
     private final String accountNumber;
     private double balance;
     private final List<String> transactionHistory;
     private boolean closed;
-    private static final double maxTransactionLimit = 5000.0;
     private String nickname;
     private boolean frozen;
     private String code;
+    private boolean hasMetMinimumBalance;
 
     public BankAccount(String accountNumber) {
         String id = Objects.requireNonNull(accountNumber, "accountNumber").trim();
@@ -32,6 +36,7 @@ public class BankAccount {
         this.closed = false;
         this.frozen = false;
         this.code = null;
+        this.hasMetMinimumBalance = false;
     }
 
     public String getAccountNumber() {
@@ -47,72 +52,19 @@ public class BankAccount {
     }
 
     public String getDisplayName() {
-        if (nickname == null) return accountNumber;
+        if (nickname == null) {
+            return accountNumber;
+        }
         return nickname + " (" + accountNumber + ")";
-    }
-
-    public void deposit(double amount) {
-        if (amount > 0 && amount <= maxTransactionLimit) {
-            this.balance += amount;
-            this.transactionHistory.add("Deposit: $" + String.format("%.2f", amount));
-        } else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    public void withdraw(double amount) {
-        if (amount > 0 && amount <= this.balance && amount <= maxTransactionLimit) {
-            this.balance -= amount;
-            this.transactionHistory.add("Withdrawal: $" + String.format("%.2f", amount));
-        } else {
-            throw new IllegalArgumentException();
-        }
     }
 
     public double getBalance() {
         return this.balance;
     }
 
-    public void collectFee(double fee) {
-        if (fee > 0 && fee <= this.balance) {
-            this.balance -= fee;
-            this.transactionHistory.add("Fee Collected: $" + String.format("%.2f", fee));
-        } else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    public List<String> getTransactionHistory() {
-        return Collections.unmodifiableList(this.transactionHistory);
-    }
-
-    public void addInterest(double amount) {
-        if (amount > 0) {
-            this.balance += amount;
-            this.transactionHistory.add("Interest Payment: $" + String.format("%.2f", amount));
-        } else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    public void transfer(BankAccount recipient, double amount) {
-        if (recipient == null) {
-            throw new IllegalArgumentException();
-        }
-        if (amount > this.balance) {
-            throw new IllegalArgumentException();
-        }
-        if (amount <= 0 || amount > maxTransactionLimit) {
-            throw new IllegalArgumentException();
-        }
-        this.balance -= amount;
-        recipient.balance += amount;
-    }
-
     public boolean isClosed() {
         return this.closed;
     }
-
 
     public boolean isFrozen() {
         return this.frozen;
@@ -122,10 +74,66 @@ public class BankAccount {
         return this.code;
     }
 
-    /**
-     * Freezes the account and creates an unlock code. Returns the generated code.
-     * Code is optional and will remain null unless an account has been frozen.
-     */
+    public List<String> getTransactionHistory() {
+        return Collections.unmodifiableList(this.transactionHistory);
+    }
+
+    public boolean isBelowMinimumBalance() {
+        return hasMetMinimumBalance && this.balance < MINIMUM_BALANCE;
+    }
+
+    public void deposit(double amount) {
+        if (amount <= 0 || amount > MAX_TRANSACTION_LIMIT) {
+            throw new IllegalArgumentException();
+        }
+        this.balance += amount;
+        this.transactionHistory.add("Deposit: $" + String.format("%.2f", amount));
+        if (this.balance >= MINIMUM_BALANCE) {
+            this.hasMetMinimumBalance = true;
+        }
+    }
+
+    public void withdraw(double amount) {
+        if (amount <= 0 || amount > this.balance || amount > MAX_TRANSACTION_LIMIT) {
+            throw new IllegalArgumentException();
+        }
+        this.balance -= amount;
+        this.transactionHistory.add("Withdrawal: $" + String.format("%.2f", amount));
+    }
+
+    public void collectFee(double fee) {
+        if (fee <= 0 || fee > this.balance) {
+            throw new IllegalArgumentException();
+        }
+        this.balance -= fee;
+        this.transactionHistory.add("Fee Collected: $" + String.format("%.2f", fee));
+    }
+
+    public void addInterest(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException();
+        }
+        this.balance += amount;
+        this.transactionHistory.add("Interest Payment: $" + String.format("%.2f", amount));
+        if (this.balance >= MINIMUM_BALANCE) {
+            this.hasMetMinimumBalance = true;
+        }
+    }
+
+    public void transfer(BankAccount recipient, double amount) {
+        if (recipient == null) {
+            throw new IllegalArgumentException();
+        }
+        if (amount <= 0 || amount > MAX_TRANSACTION_LIMIT) {
+            throw new IllegalArgumentException();
+        }
+        if (amount > this.balance) {
+            throw new IllegalArgumentException();
+        }
+        this.balance -= amount;
+        recipient.balance += amount;
+    }
+
     public String freeze() {
         if (this.closed) {
             throw new IllegalStateException("Cannot freeze a closed account.");
@@ -165,8 +173,20 @@ public class BankAccount {
         return true;
     }
 
-    public void closeAccount(){
-        if (this.closed){
+    public void applyMinimumBalanceFee() {
+        if (this.closed) {
+            throw new IllegalStateException("Cannot apply fee to a closed account.");
+        }
+        if (!isBelowMinimumBalance()) {
+            return;
+        }
+        double fee = Math.min(MINIMUM_BALANCE_FEE, this.balance);
+        this.balance -= fee;
+        this.transactionHistory.add("Minimum Balance Fee: $" + String.format("%.2f", MINIMUM_BALANCE_FEE));
+    }
+
+    public void closeAccount() {
+        if (this.closed) {
             throw new IllegalArgumentException();
         }
         this.closed = true;
