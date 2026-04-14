@@ -3,10 +3,13 @@ package test;
 import main.AdminMenu;
 import main.BankAccount;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.junit.jupiter.api.Test;
@@ -53,4 +56,52 @@ public class AdminMenuTest {
         assertTrue(adminMenu.authenticate());
     }
 
+    @Test
+    public void testApplyMinimumBalanceFeesChargesBelowMinimumAccount() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.deposit(100);
+        account.withdraw(50);
+
+        Map<String, BankAccount> accounts = new HashMap<>();
+        accounts.put(account.getAccountNumber(), account);
+
+        Scanner scanner = new Scanner(new ByteArrayInputStream("".getBytes()));
+        AdminMenu adminMenu = new AdminMenu(account, scanner, accounts);
+        adminMenu.performApplyMinimumBalanceFees();
+
+        assertEquals(25.0, account.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testApplyMinimumBalanceFeesSkipsAccountAboveMinimum() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.deposit(150);
+
+        Map<String, BankAccount> accounts = new HashMap<>();
+        accounts.put(account.getAccountNumber(), account);
+
+        Scanner scanner = new Scanner(new ByteArrayInputStream("".getBytes()));
+        AdminMenu adminMenu = new AdminMenu(account, scanner, accounts);
+        adminMenu.performApplyMinimumBalanceFees();
+
+        assertEquals(150.0, account.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testApplyMinimumBalanceFeesSkipsClosedAccount() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.deposit(100);
+        account.withdraw(50);
+        account.closeAccount();
+
+        Map<String, BankAccount> accounts = new HashMap<>();
+        accounts.put(account.getAccountNumber(), account);
+
+        Scanner scanner = new Scanner(new ByteArrayInputStream("".getBytes()));
+        AdminMenu adminMenu = new AdminMenu(account, scanner, accounts);
+        adminMenu.performApplyMinimumBalanceFees();
+        assertEquals(50.0, account.getBalance(), 0.01);
+    }
+
 }
+

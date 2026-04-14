@@ -355,7 +355,7 @@ public class BankAccountTest {
     public void testFreezeOnClosedAccountThrows() {
         BankAccount account = new BankAccount("1");
         account.closeAccount();
-        
+
         try {
             account.freeze();
             fail();
@@ -438,6 +438,86 @@ public class BankAccountTest {
         assertFalse(account.authenticate("pass123"));
         assertFalse(account.authenticate("PASS123"));
         assertTrue(account.authenticate("Pass123"));
+    public void testNewAccountNotBelowMinimum() {
+        BankAccount account = new BankAccount("TEST-1");
+        assertFalse(account.isBelowMinimumBalance());
+    }
+
+    @Test
+    public void testIsBelowMinimumBalanceAfterMeetingThenDropping() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.deposit(100);
+        account.withdraw(50);
+        assertTrue(account.isBelowMinimumBalance());
+    }
+
+    @Test
+    public void testIsBelowMinimumBalanceWhenAtMinimum() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.deposit(100);
+        assertFalse(account.isBelowMinimumBalance());
+    }
+
+    @Test
+    public void testIsBelowMinimumBalanceWhenAboveMinimum() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.deposit(150);
+        assertFalse(account.isBelowMinimumBalance());
+    }
+
+    @Test
+    public void testApplyMinimumBalanceFeeDeductsAmount() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.deposit(100);
+        account.withdraw(50);
+        account.applyMinimumBalanceFee();
+        assertEquals(25.0, account.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testApplyMinimumBalanceFeeRecordedInHistory() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.deposit(100);
+        account.withdraw(50);
+        account.applyMinimumBalanceFee();
+        boolean found = false;
+        for (String entry : account.getTransactionHistory()) {
+            if (entry.contains("Minimum Balance Fee")) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
+    }
+
+    @Test
+    public void testApplyMinimumBalanceFeeWhenBalanceLessThanFee() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.deposit(100);
+        account.withdraw(90);
+        account.applyMinimumBalanceFee();
+        assertEquals(0.0, account.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testApplyMinimumBalanceFeeNotAppliedToNewAccount() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.applyMinimumBalanceFee();
+        assertEquals(0.0, account.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testApplyMinimumBalanceFeeOnClosedAccountThrows() {
+        BankAccount account = new BankAccount("TEST-1");
+        account.deposit(100);
+        account.closeAccount();
+
+        try {
+            account.applyMinimumBalanceFee();
+            fail();
+        } catch (IllegalStateException e) {
+            // do nothing, test passes
+        }
     }
 
 }
