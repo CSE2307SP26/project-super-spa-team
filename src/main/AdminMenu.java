@@ -37,7 +37,6 @@ public class AdminMenu {
 
     public void displayOptions() {
         System.out.println("Admin Menu");
-
         System.out.println("1. Collect fee from account");
         System.out.println("2. Add interest payment");
         System.out.println("3. View all accounts summary");
