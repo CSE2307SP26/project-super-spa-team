@@ -20,24 +20,24 @@ Iteration 1:
 9. A bank adminstrator should be able to add an interest payment to an existing account when necessary.
 
 Iteration 2:
-1. Password protect admin menu (password is admin123)
-2. View all account summary (admin feature)
-3. Deposit and Withdrawal Confirmation
-4. Switching Active Account
-5. Added Max Transaction Limit
-6. Sort History By Descending/Ascending or Money-In/Out
-7. Feature for Account Naming
-8. Freezing an Account (Admin Feature)
+1. A bank administrator should be able to access the admin menu using password authentication.
+2. A bank administrator should be able to view all account summaries.
+3. A bank customer should be able to receive confirmation after deposits and withdrawals.
+4. A bank customer should be able to switch between active accounts.
+5. A bank account should be able to enforce a maximum transaction limit.
+6. A bank customer should be able to sort transaction history by amount type or order.
+7. A bank customer should be able to name their accounts.
+8. A bank administrator should be able to freeze an account.
 
 Iteration 3:
-1. Password Protect User Accounts when Switching Accounts
-2. Add Account Types (Checking, Savings, etc.)
-3. Feature for user paying off a loan
-4. Add a Minimum Balance Fee
-5. Feature for adding an Admin Log
-6. Add Reward Cashbacks for Deposits (ex. $5 for $100 deposit)
-7. Add Multiple Tiers of Accounts dependent on Account Value
-8. User can Request a Loan
+1. A bank customer should be able to secure account switching with password authentication.
+2. A bank customer should be able to create different account types such as checking or savings.
+3. A bank customer should be able to pay off a loan.
+4. A bank account should be able to apply a minimum balance fee.
+5. A bank administrator should be able to view an administrative action log.
+6. A bank customer should be able to receive cashback rewards on deposits.
+7. A bank account should be able to support tiered levels based on account value.
+8. A bank customer should be able to request a loan.
 
 ## What user stories do you intend to complete next iteration?
 We completed all user stories.
