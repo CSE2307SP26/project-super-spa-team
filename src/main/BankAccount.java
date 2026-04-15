@@ -8,6 +8,10 @@ import java.security.SecureRandom;
 
 public class BankAccount {
 
+    public enum AccountType {
+        CHECKING, SAVINGS
+    }
+
     private static final SecureRandom RNG = new SecureRandom();
     private static final char[] UNLOCK_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".toCharArray();
     private static final double MAX_TRANSACTION_LIMIT = 5000.0;
@@ -16,6 +20,7 @@ public class BankAccount {
     static final double MINIMUM_BALANCE_FEE = 25.0;
 
     private final String accountNumber;
+    private final AccountType accountType;
     private double balance;
     private final List<String> transactionHistory;
     private boolean closed;
@@ -26,11 +31,16 @@ public class BankAccount {
     private boolean hasMetMinimumBalance;
 
     public BankAccount(String accountNumber) {
+        this(accountNumber, AccountType.CHECKING);
+    }
+
+    public BankAccount(String accountNumber, AccountType accountType) {
         String id = Objects.requireNonNull(accountNumber, "accountNumber").trim();
         if (id.isEmpty()) {
             throw new IllegalArgumentException("accountNumber must not be blank");
         }
         this.accountNumber = id;
+        this.accountType = Objects.requireNonNull(accountType, "accountType");
         this.balance = 0;
         this.transactionHistory = new ArrayList<>();
         this.transactionHistory.add("Account opened: " + this.accountNumber);
@@ -43,6 +53,14 @@ public class BankAccount {
 
     public String getAccountNumber() {
         return accountNumber;
+    }
+
+    public AccountType getAccountType() {
+        return accountType;
+    }
+
+    public boolean isSavings() {
+        return accountType == AccountType.SAVINGS;
     }
 
     public String getNickname() {
@@ -75,10 +93,12 @@ public class BankAccount {
     }
 
     public String getDisplayName() {
+        String typeLabel = "[" + accountType.name().charAt(0)
+            + accountType.name().substring(1).toLowerCase() + "]";
         if (nickname == null) {
-            return accountNumber;
+            return accountNumber + " " + typeLabel;
         }
-        return nickname + " (" + accountNumber + ")";
+        return nickname + " (" + accountNumber + ") " + typeLabel;
     }
 
     public double getBalance() {

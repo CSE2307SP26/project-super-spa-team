@@ -2,6 +2,7 @@ package test;
 
 import main.AdminMenu;
 import main.BankAccount;
+import main.BankAccount.AccountType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -103,6 +104,34 @@ public class AdminMenuTest {
         AdminMenu adminMenu = new AdminMenu(account, scanner, accounts);
         adminMenu.performApplyMinimumBalanceFees();
         assertEquals(50.0, account.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testInterestPaymentBlockedForCheckingAccount() {
+        BankAccount account = new BankAccount("TEST-CHK");
+        account.deposit(100.00);
+        Scanner scanner = new Scanner(new ByteArrayInputStream("".getBytes()));
+        AdminMenu adminMenu = new AdminMenu(account, scanner, new HashMap<>());
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(out));
+        adminMenu.performInterestPayment();
+        System.setOut(System.out);
+
+        assertEquals(100.0, account.getBalance(), 0.01);
+        assertTrue(out.toString().contains("Savings accounts"));
+    }
+
+    @Test
+    public void testInterestPaymentAllowedForSavingsAccount() {
+        BankAccount account = new BankAccount("TEST-SAV", AccountType.SAVINGS);
+        account.deposit(100.00);
+        Scanner scanner = new Scanner(new ByteArrayInputStream("50\n".getBytes()));
+        AdminMenu adminMenu = new AdminMenu(account, scanner, new HashMap<>());
+
+        adminMenu.performInterestPayment();
+
+        assertEquals(150.0, account.getBalance(), 0.01);
     }
 
     @Test
