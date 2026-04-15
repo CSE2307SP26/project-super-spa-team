@@ -40,7 +40,7 @@ public class MainMenuTest {
 
     @Test
     public void testAdminMenuNotLockedAfterSuccessfulLogin() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("\nadmin123\n7\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\npass1234\nadmin123\n7\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
         menu.performCreateAdditionalAccount(false);
         menu.performAdminMenu();
