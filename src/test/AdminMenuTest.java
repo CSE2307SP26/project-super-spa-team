@@ -134,5 +134,39 @@ public class AdminMenuTest {
         assertEquals(150.0, account.getBalance(), 0.01);
     }
 
+    @Test
+    public void testViewTransactionHistoryShowsTransactions() {
+        BankAccount account = new BankAccount("TEST-001");
+        account.deposit(100.00);
+        account.withdraw(25.00);
+        Scanner scanner = new Scanner(new ByteArrayInputStream("".getBytes()));
+        AdminMenu adminMenu = new AdminMenu(account, scanner, new java.util.HashMap<>());
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(out));
+        adminMenu.performViewTransactionHistory();
+        System.setOut(System.out);
+
+        String output = out.toString();
+        assertTrue(output.contains("Account opened: TEST-001"));
+        assertTrue(output.contains("Deposit: $100.00"));
+        assertTrue(output.contains("Withdrawal: $25.00"));
+    }
+
+    @Test
+    public void testViewTransactionHistoryShowsAccountOpened() {
+        BankAccount account = new BankAccount("TEST-002");
+        Scanner scanner = new Scanner(new ByteArrayInputStream("".getBytes()));
+        AdminMenu adminMenu = new AdminMenu(account, scanner, new java.util.HashMap<>());
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(out));
+        adminMenu.performViewTransactionHistory();
+        System.setOut(System.out);
+
+        String output = out.toString();
+        assertTrue(output.contains("Account opened: TEST-002"));
+    }
+
 }
 
