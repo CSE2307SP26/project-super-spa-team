@@ -438,6 +438,9 @@ public class BankAccountTest {
         assertFalse(account.authenticate("pass123"));
         assertFalse(account.authenticate("PASS123"));
         assertTrue(account.authenticate("Pass123"));
+    }
+
+    @Test
     public void testNewAccountNotBelowMinimum() {
         BankAccount account = new BankAccount("TEST-1");
         assertFalse(account.isBelowMinimumBalance());
