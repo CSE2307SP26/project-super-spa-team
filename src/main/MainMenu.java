@@ -360,6 +360,10 @@ public class MainMenu {
         String nick = keyboardInput.nextLine();
         created.setNickname(nick);
 
+        System.out.print("Set a password for this account (min 4 characters): ");
+        String pass = keyboardInput.nextLine();
+        created.setPassword(pass);
+
         System.out.println("Additional account created: " + created.getDisplayName());
         System.out.println("This account is now active. Balance: $" + String.format("%.2f", created.getBalance()));
     }
@@ -450,6 +454,52 @@ public class MainMenu {
             processInput(selection);
         }
     }
+
+    public void performSwitchActiveAccount(){
+        // create list of accounts the user can select
+        List<BankAccount> selectableAccounts = new ArrayList<>();
+
+        for (BankAccount account : accountsByNumber.values()) {
+            
+            if (!account.getAccountNumber().equals(DUMMY_ACCOUNT_NUMBER) && !account.isClosed() && !account.getAccountNumber().equals(activeAccountNumber)) {        
+                selectableAccounts.add(account);
+            }
+       }
+
+       if (selectableAccounts.isEmpty()){
+        System.out.println("There are no accounts available to switch to.");
+        return;
+       }
+
+       System.out.println("Select an account to switch to and make active:");
+       
+       int num = 1;
+       for( BankAccount accountOption : selectableAccounts){
+            System.out.println(num + ". " + accountOption.getDisplayName());
+            num +=1; 
+       }
+
+       int selection = -1;
+        
+       while (selection < 1 || selection > selectableAccounts.size()) {
+            System.out.print("Enter the number of the account you want to make active: ");
+            selection = keyboardInput.nextInt();
+        }
+
+        BankAccount selectedAccount = selectableAccounts.get(selection - 1);
+
+        System.out.print("Enter password for " + selectedAccount.getDisplayName() + ": ");
+        String passAttempt = keyboardInput.next();
+        if (!selectedAccount.authenticate(passAttempt)) {
+            System.out.println("Incorrect password. Switch cancelled.");
+            return;
+        }
+
+        activeAccountNumber = selectedAccount.getAccountNumber();
+
+        System.out.println("Active account switched to: " + selectedAccount.getDisplayName());
+
+    }   
 
     public static void main(String[] args) {
         MainMenu bankApp = new MainMenu();

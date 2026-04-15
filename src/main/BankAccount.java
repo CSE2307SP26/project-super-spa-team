@@ -22,6 +22,7 @@ public class BankAccount {
     private String nickname;
     private boolean frozen;
     private String code;
+    private String password;
     private boolean hasMetMinimumBalance;
 
     public BankAccount(String accountNumber) {
@@ -36,6 +37,7 @@ public class BankAccount {
         this.closed = false;
         this.frozen = false;
         this.code = null;
+        this.password = null;
         this.hasMetMinimumBalance = false;
     }
 
@@ -49,6 +51,27 @@ public class BankAccount {
 
     public void setNickname(String nickname) {
         this.nickname = (nickname == null || nickname.isBlank()) ? null : nickname.trim();
+    }
+
+    public void setPassword(String password) {
+        if (password == null || password.isBlank()) {
+            throw new IllegalArgumentException("Password must not be blank.");
+        }
+        String trimmed = password.trim();
+        if (trimmed.length() < 4) {
+            throw new IllegalArgumentException("Password must be at least 4 characters.");
+        }
+        this.password = trimmed;
+    }
+
+    public boolean authenticate(String attempt) {
+        if (this.password == null) {
+            return true;
+        }
+        if (attempt == null || attempt.trim().isEmpty()) {
+            return false;
+        }
+        return this.password.equals(attempt.trim());
     }
 
     public String getDisplayName() {
