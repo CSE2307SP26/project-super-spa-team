@@ -1,12 +1,13 @@
 package main;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 public class AdminMenu {
 
-    private static final int EXIT_SELECTION = 7;
-    private static final int MAX_SELECTION = 7;
+    private static final int EXIT_SELECTION = 8;
+    private static final int MAX_SELECTION = 8;
     private static final String ADMIN_PASSWORD = "admin123";
     private static final int MAX_PASSWORD_ATTEMPTS = 3;
 
@@ -43,7 +44,8 @@ public class AdminMenu {
         System.out.println("4. Freeze this account");
         System.out.println("5. Unlock this account");
         System.out.println("6. Apply minimum balance fees");
-        System.out.println("7. Return to main menu");
+        System.out.println("7. View account transaction history");
+        System.out.println("8. Return to main menu");
     }
 
     public int getUserSelection(int max) {
@@ -75,6 +77,9 @@ public class AdminMenu {
             case 6:
                 performApplyMinimumBalanceFees();
                 break;
+            case 7:
+                performViewTransactionHistory();
+                break;
         }
     }
 
@@ -85,6 +90,19 @@ public class AdminMenu {
             String status = acc.isClosed() ? "Closed" : "Open";
             System.out.printf("%-15s $%-11.2f %s%n",
                 acc.getAccountNumber(), acc.getBalance(), status);
+        }
+        System.out.println("----------------------------");
+    }
+
+    public void performViewTransactionHistory() {
+        List<String> history = account.getTransactionHistory();
+        System.out.println("--- Transaction History for " + account.getAccountNumber() + " ---");
+        if (history.isEmpty()) {
+            System.out.println("No transactions found.");
+        } else {
+            for (int i = 0; i < history.size(); i++) {
+                System.out.println((i + 1) + ". " + history.get(i));
+            }
         }
         System.out.println("----------------------------");
     }
