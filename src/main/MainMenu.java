@@ -349,14 +349,23 @@ public class MainMenu {
             number = String.format("ACC-%04d", nextAccountSequence++);
         } while (accountsByNumber.containsKey(number));
 
-        BankAccount created = new BankAccount(number);
+        if (consumeNewline) {
+            keyboardInput.nextLine();
+        }
+
+        System.out.println("Select account type:");
+        System.out.println("1. Checking");
+        System.out.println("2. Savings");
+        int typeChoice = getUserSelection(2);
+        keyboardInput.nextLine(); // consume newline left by nextInt
+        BankAccount.AccountType chosenType =
+            (typeChoice == 2) ? BankAccount.AccountType.SAVINGS : BankAccount.AccountType.CHECKING;
+
+        BankAccount created = new BankAccount(number, chosenType);
         accountsByNumber.put(created.getAccountNumber(), created);
         activeAccountNumber = created.getAccountNumber();
 
         System.out.print("Enter a nickname for this account (or press Enter to skip): ");
-        if (consumeNewline) {
-            keyboardInput.nextLine();
-        }
         String nick = keyboardInput.nextLine();
         created.setNickname(nick);
 

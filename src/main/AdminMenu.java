@@ -104,6 +104,10 @@ public class AdminMenu {
     }
 
     public void performInterestPayment() {
+        if (!account.isSavings()) {
+            System.out.println("Interest payments can only be applied to Savings accounts.");
+            return;
+        }
         double amount = -1;
         while (amount < 0) {
             System.out.print("Enter interest payment amount: ");

@@ -1,6 +1,7 @@
 package test;
 
 import main.BankAccount;
+import main.BankAccount.AccountType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -238,13 +239,27 @@ public class BankAccountTest {
     public void testGetDisplayNameWithNickname() {
         BankAccount account = new BankAccount("ACC-1001");
         account.setNickname("Savings");
-        assertEquals("Savings (ACC-1001)", account.getDisplayName());
+        assertEquals("Savings (ACC-1001) [Checking]", account.getDisplayName());
     }
 
     @Test
     public void testGetDisplayNameWithoutNickname() {
         BankAccount account = new BankAccount("ACC-1001");
-        assertEquals("ACC-1001", account.getDisplayName());
+        assertEquals("ACC-1001 [Checking]", account.getDisplayName());
+    }
+
+    @Test
+    public void testNewAccountDefaultsToChecking() {
+        BankAccount account = new BankAccount("X");
+        assertEquals(AccountType.CHECKING, account.getAccountType());
+        assertFalse(account.isSavings());
+    }
+
+    @Test
+    public void testSavingsAccountType() {
+        BankAccount account = new BankAccount("X", AccountType.SAVINGS);
+        assertEquals(AccountType.SAVINGS, account.getAccountType());
+        assertTrue(account.isSavings());
     }
 
     @Test
