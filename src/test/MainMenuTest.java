@@ -49,7 +49,7 @@ public class MainMenuTest {
 
     @Test
     public void testDepositConfirmedUpdatesBalance() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("\n50\nyes\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\n1\n50\nyes\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
         menu.performCreateAdditionalAccount(false);
         menu.performDeposit();
@@ -58,7 +58,7 @@ public class MainMenuTest {
 
     @Test
     public void testDepositCancelledLeavesBalanceUnchanged() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("\n50\nno\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\n1\n50\nno\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
         menu.performCreateAdditionalAccount(false);
         menu.performDeposit();
@@ -67,7 +67,7 @@ public class MainMenuTest {
 
     @Test
     public void testWithdrawalConfirmedUpdatesBalance() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("\n50\nyes\n20\nyes\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\n1\n50\nyes\n20\nyes\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
         menu.performCreateAdditionalAccount(false);
         menu.performDeposit();
@@ -77,7 +77,7 @@ public class MainMenuTest {
 
     @Test
     public void testWithdrawalCancelledLeavesBalanceUnchanged() {
-        Scanner scanner = new Scanner(new ByteArrayInputStream("\n50\nyes\n20\nno\n".getBytes()));
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\n1\n50\nyes\n20\nno\n".getBytes()));
         MainMenu menu = new MainMenu(scanner);
         menu.performCreateAdditionalAccount(false);
         menu.performDeposit();
@@ -89,9 +89,9 @@ public class MainMenuTest {
     public void testSwitchActiveAccountValid() {
         Scanner scanner = new Scanner(new ByteArrayInputStream(
             ("Checking\n" +     // nickname for first account
-            "100\nyes\n" +     // deposit into first account
+            "1\n100\nyes\n" +     // deposit into first account
             "Savings\n" +    // nickname for second account
-            "200\nyes\n" +     // deposit into second account
+            "1\n200\nyes\n" +     // deposit into second account
             "1\n").getBytes()  // switch back to first account
         ));
 
@@ -125,6 +125,15 @@ public class MainMenuTest {
         String afterAccount = menu.getActiveAccountNumber();
 
         assertEquals(beforeAccount, afterAccount);
+    }
+
+    @Test
+    public void testLoanApprovedUpdatesBalance() {
+        Scanner scanner = new Scanner(new ByteArrayInputStream("\n2\n100\nyes\n".getBytes()));
+        MainMenu menu = new MainMenu(scanner);
+        menu.performCreateAdditionalAccount(false);
+        menu.performDeposit();
+        assertEquals(100.0, menu.getActiveAccountBalance(), 0.01);
     }
 
 }
