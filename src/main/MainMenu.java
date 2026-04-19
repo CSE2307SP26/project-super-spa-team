@@ -164,10 +164,15 @@ public class MainMenu {
         System.out.println("Deposit options:");
         System.out.println("1. Deposit money");
         System.out.println("2. Request a loan");
-        int depositChoice = getUserSelection(2);
+        System.out.println("3. Pay toward loan");
+        int depositChoice = getUserSelection(3);
 
         if (depositChoice == 2) {
             performRequestLoan();
+            return;
+        }
+        if (depositChoice == 3) {
+            performPayTowardLoan();
             return;
         }
 
@@ -198,6 +203,56 @@ public class MainMenu {
             }
         } else {
             System.out.println("Deposit cancelled.");
+        }
+    }
+
+    public void performPayTowardLoan() {
+        if (getActiveAccount().isFrozen()) {
+            System.out.println("This account is frozen. Unlock it before paying toward your loan.");
+            return;
+        }
+        if (getActiveAccount().isClosed()) {
+            System.out.println("This account is closed. You cannot pay toward a loan.");
+            return;
+        }
+        if (getActiveAccount().getOutstandingLoan() <= 0) {
+            System.out.println("You have no loan balance to pay.");
+            return;
+        }
+
+        double amount = -1;
+        while (amount < 0) {
+            System.out.print("How much would you like to pay toward your loan?: ");
+            amount = keyboardInput.nextDouble();
+        }
+
+        if (amount == 0 || amount > 5000) {
+            System.out.println("Payment failed: amount must be greater than 0 and no more than $5000.");
+            return;
+        }
+        if (amount > getActiveAccountBalance()) {
+            System.out.println("Payment failed: amount cannot exceed your balance.");
+            return;
+        }
+        if (amount > getActiveAccount().getOutstandingLoan()) {
+            System.out.println("Payment failed: amount cannot exceed your outstanding loan.");
+            return;
+        }
+
+        System.out.print("Confirm loan payment of $" + String.format("%.2f", amount) + "? (yes/no): ");
+        String confirmation = keyboardInput.next().trim();
+
+        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+            try {
+                getActiveAccount().payTowardLoan(amount);
+                System.out.println("Loan payment successful.");
+                System.out.println("New balance: $" + String.format("%.2f", getActiveAccountBalance()));
+                System.out.println("Your remaining loan is: $" + String.format("%.2f", getActiveAccount().getOutstandingLoan()));
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                System.out.println("Loan payment failed.");
+            }
+        } else {
+            System.out.println("Loan payment cancelled.");
         }
     }
 
@@ -290,7 +345,8 @@ public class MainMenu {
         if (line == null) {
             return false;
         }
-        return line.startsWith("Withdrawal:") || line.startsWith("Fee Collected:");
+        return line.startsWith("Withdrawal:") || line.startsWith("Fee Collected:")
+            || line.startsWith("Loan payment:");
     }
 
     private static Double extractAmount(String line) {
@@ -414,6 +470,10 @@ public class MainMenu {
 
     public double getActiveAccountBalance() {
         return getActiveAccount().getBalance();
+    }
+
+    public double getActiveAccountOutstandingLoan() {
+        return getActiveAccount().getOutstandingLoan();
     }
 
     public void performCloseAccount(){
