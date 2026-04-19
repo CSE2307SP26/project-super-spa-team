@@ -118,11 +118,59 @@ public class MainMenu {
         }
     }
 
+    public void performRequestLoan() {
+        if (getActiveAccount().isFrozen()) {
+            System.out.println("This account is frozen. Unlock it before requesting a loan.");
+            return;
+        }
+        if (getActiveAccount().isClosed()) {
+            System.out.println("This account is closed. You cannot request a loan.");
+            return;
+        }
+
+        double amount = -1;
+        while (amount < 0) {
+            System.out.print("How much would you like to borrow?: ");
+            amount = keyboardInput.nextDouble();
+        }
+
+        if (amount == 0 || amount > 5000) {
+            System.out.println("Loan request failed: amount must be greater than 0 and no more than $5000.");
+            return;
+        }
+
+        System.out.print("Confirm loan of $" + String.format("%.2f", amount) + "? (yes/no): ");
+        String confirmation = keyboardInput.next().trim();
+
+        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+            try {
+                getActiveAccount().requestLoan(amount);
+                System.out.println("Loan approved.");
+                System.out.println("New balance: $" + String.format("%.2f", getActiveAccountBalance()));
+                System.out.println("Your total loan is now: $" + String.format("%.2f", getActiveAccount().getOutstandingLoan()));
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                System.out.println("Loan request failed.");
+            }
+        } else {
+            System.out.println("Loan cancelled.");
+        }
+    }
+
     public void performCheckBalance() {
         System.out.println("Your balance is: $" + String.format("%.2f", getActiveAccount().getBalance()));
     }
 
     public void performDeposit() {
+        System.out.println("Deposit options:");
+        System.out.println("1. Deposit money");
+        System.out.println("2. Request a loan");
+        int depositChoice = getUserSelection(2);
+
+        if (depositChoice == 2) {
+            performRequestLoan();
+            return;
+        }
+
         if (getActiveAccount().isFrozen()) {
             System.out.println("This account is frozen. Unlock it before making a deposit.");
             return;

@@ -364,4 +364,55 @@ public class BankAccountTest {
         }
     }
 
+    @Test
+    public void testRequestLoanIncreasesBalanceAndOutstandingLoan() {
+        BankAccount account = new BankAccount("1");
+        account.requestLoan(250);
+        assertEquals(250, account.getBalance(), 0.01);
+        assertEquals(250, account.getOutstandingLoan(), 0.01);
+        assertTrue(account.getTransactionHistory().get(account.getTransactionHistory().size() - 1).contains("Loan disbursed"));
+    }
+
+    @Test
+    public void testRequestLoanInvalidAmountThrows() {
+        BankAccount account = new BankAccount("1");
+        try {
+            account.requestLoan(0);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+
+        try {
+            account.requestLoan(5001);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testRequestLoanFrozenAccountThrows() {
+        BankAccount account = new BankAccount("1");
+        account.freeze();
+        try {
+            account.requestLoan(100);
+            fail();
+        } catch (IllegalStateException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testRequestLoanClosedAccountThrows() {
+        BankAccount account = new BankAccount("1");
+        account.closeAccount();
+        try {
+            account.requestLoan(100);
+            fail();
+        } catch (IllegalStateException e) {
+            // pass
+        }
+    }
+
 }

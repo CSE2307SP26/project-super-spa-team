@@ -13,6 +13,7 @@ public class BankAccount {
 
     private final String accountNumber;
     private double balance;
+    private double outstandingLoan;
     private final List<String> transactionHistory;
     private boolean closed;
     private static final double maxTransactionLimit = 5000.0;
@@ -27,6 +28,7 @@ public class BankAccount {
         }
         this.accountNumber = id;
         this.balance = 0;
+        this.outstandingLoan = 0;
         this.transactionHistory = new ArrayList<>();
         this.transactionHistory.add("Account opened: " + this.accountNumber);
         this.closed = false;
@@ -71,6 +73,25 @@ public class BankAccount {
 
     public double getBalance() {
         return this.balance;
+    }
+
+    public double getOutstandingLoan() {
+        return this.outstandingLoan;
+    }
+
+    public void requestLoan(double amount) {
+        if (this.closed) {
+            throw new IllegalStateException("Cannot request a loan from a closed account.");
+        }
+        if (this.frozen) {
+            throw new IllegalStateException("Cannot request a loan from a frozen account.");
+        }
+        if (amount <= 0 || amount > maxTransactionLimit) {
+            throw new IllegalArgumentException();
+        }
+        this.balance += amount;
+        this.outstandingLoan += amount;
+        this.transactionHistory.add("Loan disbursed: $" + String.format("%.2f", amount));
     }
 
     public void collectFee(double fee) {
