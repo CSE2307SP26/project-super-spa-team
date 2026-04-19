@@ -136,4 +136,16 @@ public class MainMenuTest {
         assertEquals(100.0, menu.getActiveAccountBalance(), 0.01);
     }
 
+    @Test
+    public void testPayTowardLoanReducesOutstanding() {
+        Scanner scanner = new Scanner(new ByteArrayInputStream(
+            "\n2\n100\nyes\n3\n40\nyes\n".getBytes()));
+        MainMenu menu = new MainMenu(scanner);
+        menu.performCreateAdditionalAccount(false);
+        menu.performDeposit();
+        menu.performDeposit();
+        assertEquals(60.0, menu.getActiveAccountBalance(), 0.01);
+        assertEquals(60.0, menu.getActiveAccountOutstandingLoan(), 0.01);
+    }
+
 }

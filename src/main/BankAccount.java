@@ -94,6 +94,33 @@ public class BankAccount {
         this.transactionHistory.add("Loan disbursed: $" + String.format("%.2f", amount));
     }
 
+    /**
+     * Pays down the outstanding loan from this account's balance.
+     */
+    public void payTowardLoan(double amount) {
+        if (this.closed) {
+            throw new IllegalStateException("Cannot pay toward a loan on a closed account.");
+        }
+        if (this.frozen) {
+            throw new IllegalStateException("Cannot pay toward a loan on a frozen account.");
+        }
+        if (this.outstandingLoan <= 0) {
+            throw new IllegalArgumentException();
+        }
+        if (amount <= 0 || amount > maxTransactionLimit) {
+            throw new IllegalArgumentException();
+        }
+        if (amount > this.balance) {
+            throw new IllegalArgumentException();
+        }
+        if (amount > this.outstandingLoan) {
+            throw new IllegalArgumentException();
+        }
+        this.balance -= amount;
+        this.outstandingLoan -= amount;
+        this.transactionHistory.add("Loan payment: $" + String.format("%.2f", amount));
+    }
+
     public void collectFee(double fee) {
         if (fee > 0 && fee <= this.balance) {
             this.balance -= fee;
