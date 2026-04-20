@@ -33,7 +33,7 @@ Iteration 3:
 1. A bank customer should be able to secure account switching with password authentication.
 2. A bank customer should be able to create different account types such as checking or savings.
 3. A bank customer should be able to pay off a loan.
-4. A bank account should be able to apply a minimum balance fee.
+4. A bank account should be able to apply a minimum balance fee for accounts that have at one point been above $100 (new accounts don't get affected).
 5. A bank administrator should be able to view an administrative action log.
 6. A bank customer should be able to receive cashback rewards on deposits.
 7. A bank account should be able to support tiered levels based on account value.
