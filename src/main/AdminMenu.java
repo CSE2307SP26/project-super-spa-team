@@ -1,18 +1,26 @@
 package main;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 public class AdminMenu {
 
-    private static final int EXIT_SELECTION = 6;
-    private static final int MAX_SELECTION = 6;
+    private static final int COLLECT_FEE_SELECTION = 1;
+    private static final int INTEREST_SELECTION = 2;
+    private static final int VIEW_ALL_SELECTION = 3;
+    private static final int FREEZE_SELECTION = 4;
+    private static final int UNLOCK_SELECTION = 5;
+    private static final int MIN_BALANCE_SELECTION = 6;
+    private static final int VIEW_HISTORY_SELECTION = 7;
+    private static final int EXIT_SELECTION = 8;
+    private static final int MAX_SELECTION = 8;
     private static final String ADMIN_PASSWORD = "admin123";
     private static final int MAX_PASSWORD_ATTEMPTS = 3;
 
-    private BankAccount account;
-    private Map<String, BankAccount> allAccounts;
-    private Scanner keyboardInput;
+    private final BankAccount account;
+    private final Map<String, BankAccount> allAccounts;
+    private final Scanner keyboardInput;
 
     public AdminMenu(BankAccount account, Scanner keyboardInput, Map<String, BankAccount> allAccounts) {
         this.account = account;
@@ -37,13 +45,14 @@ public class AdminMenu {
 
     public void displayOptions() {
         System.out.println("Admin Menu");
-
         System.out.println("1. Collect fee from account");
         System.out.println("2. Add interest payment");
         System.out.println("3. View all accounts summary");
         System.out.println("4. Freeze this account");
         System.out.println("5. Unlock this account");
-        System.out.println("6. Return to main menu");
+        System.out.println("6. Apply minimum balance fees");
+        System.out.println("7. View account transaction history");
+        System.out.println("8. Return to main menu");
     }
 
     public int getUserSelection(int max) {
@@ -57,20 +66,26 @@ public class AdminMenu {
 
     public void processInput(int selection) {
         switch (selection) {
-            case 1:
+            case COLLECT_FEE_SELECTION:
                 performCollection();
                 break;
-            case 2:
+            case INTEREST_SELECTION:
                 performInterestPayment();
                 break;
-            case 3:
+            case VIEW_ALL_SELECTION:
                 performViewAllAccounts();
                 break;
-            case 4:
+            case FREEZE_SELECTION:
                 performFreeze();
                 break;
-            case 5:
+            case UNLOCK_SELECTION:
                 performUnlock();
+                break;
+            case MIN_BALANCE_SELECTION:
+                performApplyMinimumBalanceFees();
+                break;
+            case VIEW_HISTORY_SELECTION:
+                performViewTransactionHistory();
                 break;
         }
     }
@@ -82,6 +97,19 @@ public class AdminMenu {
             String status = acc.isClosed() ? "Closed" : "Open";
             System.out.printf("%-15s $%-11.2f %s%n",
                 acc.getAccountNumber(), acc.getBalance(), status);
+        }
+        System.out.println("----------------------------");
+    }
+
+    public void performViewTransactionHistory() {
+        List<String> history = account.getTransactionHistory();
+        System.out.println("--- Transaction History for " + account.getAccountNumber() + " ---");
+        if (history.isEmpty()) {
+            System.out.println("No transactions found.");
+        } else {
+            for (int i = 0; i < history.size(); i++) {
+                System.out.println((i + 1) + ". " + history.get(i));
+            }
         }
         System.out.println("----------------------------");
     }
@@ -101,6 +129,10 @@ public class AdminMenu {
     }
 
     public void performInterestPayment() {
+        if (!account.isSavings()) {
+            System.out.println("Interest payments can only be applied to Savings accounts.");
+            return;
+        }
         double amount = -1;
         while (amount < 0) {
             System.out.print("Enter interest payment amount: ");
@@ -140,6 +172,26 @@ public class AdminMenu {
             System.out.println("Account unlocked: " + account.getAccountNumber());
         } else {
             System.out.println("Unlock failed: code did not match.");
+        }
+    }
+
+    public void performApplyMinimumBalanceFees() {
+        int feeCount = 0;
+        for (BankAccount acc : allAccounts.values()) {
+            if (acc.isClosed() || acc.isFrozen()) {
+                continue;
+            }
+            if (acc.isBelowMinimumBalance()) {
+                acc.applyMinimumBalanceFee();
+                System.out.println("Notice: " + acc.getDisplayName()
+                    + " charged a $" + String.format("%.2f", BankAccount.MINIMUM_BALANCE_FEE)
+                    + " minimum balance fee. New balance: $"
+                    + String.format("%.2f", acc.getBalance()));
+                feeCount++;
+            }
+        }
+        if (feeCount == 0) {
+            System.out.println("No accounts are below the minimum balance.");
         }
     }
 
