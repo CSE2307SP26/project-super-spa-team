@@ -12,14 +12,18 @@ import java.util.regex.Pattern;
 
 public class MainMenu {
 
-    private static final int VIEW_HISTORY_SELECTION = 4;
+    private static final int DEPOSIT_SELECTION = 1;
     private static final int WITHDRAWAL_SELECTION = 2;
+    private static final int CHECK_BALANCE_SELECTION = 3;
+    private static final int VIEW_HISTORY_SELECTION = 4;
+    private static final int CREATE_ACCOUNT_SELECTION = 5;
+    private static final int SWITCH_ACTIVE_ACCOUNT_SELECTION = 6;
     private static final int TRANSFER_SELECTION = 7;
+    private static final int CLOSE_ACCOUNT_SELECTION = 8;
     private static final int EXIT_SELECTION = 9;
     private static final int ADMIN_SELECTION = 10;
     private static final int MAX_SELECTION = 10;
-    private static final int CLOSE_ACCOUNT_SELECTION = 8;
-    private static final int SWITCH_ACTIVE_ACCOUNT_SELECTION = 6;
+    private static final double MAX_TRANSACTION_LIMIT = 5000.0;
     private static final String DUMMY_ACCOUNT_NUMBER = "DUMMY-ACC";
     private static final int ADMIN_COOLDOWN_SECONDS = 10;
 
@@ -93,19 +97,19 @@ public class MainMenu {
 
     public void processInput(int selection) {
         switch (selection) {
-            case 1:
+            case DEPOSIT_SELECTION:
                 performDeposit();
                 break;
             case WITHDRAWAL_SELECTION:
                 performWithdrawal();
                 break;
-            case 3:
+            case CHECK_BALANCE_SELECTION:
                 performCheckBalance();
                 break;
             case VIEW_HISTORY_SELECTION:
                 performViewTransactionHistory();
                 break;
-            case 5:
+            case CREATE_ACCOUNT_SELECTION:
                 performCreateAdditionalAccount(true);
                 break;
             case SWITCH_ACTIVE_ACCOUNT_SELECTION:
@@ -147,7 +151,7 @@ public class MainMenu {
     }
 
     private boolean isAmountInvalid(double amount, boolean checkBalance) {
-        if (amount == 0 || amount > 5000) {
+        if (amount == 0 || amount > MAX_TRANSACTION_LIMIT) {
             return true;
         }
         if (checkBalance && amount > getActiveAccountBalance()) {
