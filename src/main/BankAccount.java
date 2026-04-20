@@ -39,6 +39,7 @@ public class BankAccount {
     private final AccountType accountType;
     private AccountStatus accountStatus;
     private double balance;
+    private double outstandingLoan;
     private final List<String> transactionHistory;
     private boolean closed;
     private String nickname;
@@ -59,6 +60,7 @@ public class BankAccount {
         this.accountNumber = id;
         this.accountType = Objects.requireNonNull(accountType, "accountType");
         this.balance = 0;
+        this.outstandingLoan = 0;
         this.transactionHistory = new ArrayList<>();
         this.transactionHistory.add("Account opened: " + this.accountNumber);
         this.closed = false;
@@ -134,6 +136,57 @@ public class BankAccount {
 
     public double getBalance() {
         return this.balance;
+    }
+
+    public double getOutstandingLoan() {
+        return this.outstandingLoan;
+    }
+
+    public void requestLoan(double amount) {
+        if (this.closed) {
+            throw new IllegalStateException("Cannot request a loan from a closed account.");
+        }
+        if (this.frozen) {
+            throw new IllegalStateException("Cannot request a loan from a frozen account.");
+        }
+        if (amount <= 0 || amount > MAX_TRANSACTION_LIMIT) {
+            throw new IllegalArgumentException();
+        }
+        this.balance += amount;
+        this.outstandingLoan += amount;
+        updateAccountStatus();
+        this.transactionHistory.add("Loan disbursed: $" + String.format("%.2f", amount));
+        if (this.balance >= MINIMUM_BALANCE) {
+            this.hasMetMinimumBalance = true;
+        }
+    }
+
+    /**
+     * Pays down the outstanding loan from this account's balance.
+     */
+    public void payTowardLoan(double amount) {
+        if (this.closed) {
+            throw new IllegalStateException("Cannot pay toward a loan on a closed account.");
+        }
+        if (this.frozen) {
+            throw new IllegalStateException("Cannot pay toward a loan on a frozen account.");
+        }
+        if (this.outstandingLoan <= 0) {
+            throw new IllegalArgumentException();
+        }
+        if (amount <= 0 || amount > MAX_TRANSACTION_LIMIT) {
+            throw new IllegalArgumentException();
+        }
+        if (amount > this.balance) {
+            throw new IllegalArgumentException();
+        }
+        if (amount > this.outstandingLoan) {
+            throw new IllegalArgumentException();
+        }
+        this.balance -= amount;
+        this.outstandingLoan -= amount;
+        updateAccountStatus();
+        this.transactionHistory.add("Loan payment: $" + String.format("%.2f", amount));
     }
 
     public boolean isClosed() {

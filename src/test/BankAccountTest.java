@@ -424,6 +424,33 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testRequestLoanIncreasesBalanceAndOutstandingLoan() {
+        BankAccount account = new BankAccount("1");
+        account.requestLoan(250);
+        assertEquals(250, account.getBalance(), 0.01);
+        assertEquals(250, account.getOutstandingLoan(), 0.01);
+        assertTrue(account.getTransactionHistory().get(account.getTransactionHistory().size() - 1).contains("Loan disbursed"));
+    }
+
+    @Test
+    public void testRequestLoanInvalidAmountThrows() {
+        BankAccount account = new BankAccount("1");
+        try {
+            account.requestLoan(0);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+
+        try {
+            account.requestLoan(5001);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
+
+    @Test
     public void testSetPasswordRejectsTooShort() {
         BankAccount account = new BankAccount("TEST-1");
         try {
@@ -541,6 +568,18 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testRequestLoanFrozenAccountThrows() {
+        BankAccount account = new BankAccount("1");
+        account.freeze();
+        try {
+            account.requestLoan(100);
+            fail();
+        } catch (IllegalStateException e) {
+            // pass
+        }
+    }
+
+    @Test
     public void testBronzeDepositBonus() {
         BankAccount account = new BankAccount("TEST-1");
 
@@ -575,6 +614,86 @@ public class BankAccountTest {
         assertEquals(6.0, bonus, 0.01);
         assertEquals(startingBalance + 2000 + 6.0, account.getBalance(), 0.01);
     }
-    
+
+    @Test
+    public void testRequestLoanClosedAccountThrows() {
+        BankAccount account = new BankAccount("1");
+        account.closeAccount();
+        try {
+            account.requestLoan(100);
+            fail();
+        } catch (IllegalStateException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testPayTowardLoanReducesBalanceAndOutstandingLoan() {
+        BankAccount account = new BankAccount("1");
+        account.requestLoan(200);
+        account.payTowardLoan(75);
+        assertEquals(125, account.getBalance(), 0.01);
+        assertEquals(125, account.getOutstandingLoan(), 0.01);
+        assertTrue(account.getTransactionHistory().get(account.getTransactionHistory().size() - 1).contains("Loan payment"));
+    }
+
+    @Test
+    public void testPayTowardLoanPaysOffFully() {
+        BankAccount account = new BankAccount("1");
+        account.requestLoan(100);
+        account.payTowardLoan(100);
+        assertEquals(0, account.getBalance(), 0.01);
+        assertEquals(0, account.getOutstandingLoan(), 0.01);
+    }
+
+    @Test
+    public void testPayTowardLoanNoOutstandingThrows() {
+        BankAccount account = new BankAccount("1");
+        account.deposit(50);
+        try {
+            account.payTowardLoan(10);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testPayTowardLoanExceedsOutstandingThrows() {
+        BankAccount account = new BankAccount("1");
+        account.requestLoan(50);
+        try {
+            account.payTowardLoan(51);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testPayTowardLoanExceedsBalanceThrows() {
+        BankAccount account = new BankAccount("1");
+        account.requestLoan(100);
+        account.withdraw(30);
+        try {
+            account.payTowardLoan(80);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testPayTowardLoanFrozenAccountThrows() {
+        BankAccount account = new BankAccount("1");
+        account.requestLoan(100);
+        account.freeze();
+        try {
+            account.payTowardLoan(50);
+            fail();
+        } catch (IllegalStateException e) {
+            // pass
+        }
+    }
 }
 

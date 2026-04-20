@@ -129,6 +129,44 @@ public class MainMenu {
         }
     }
 
+    public void performRequestLoan() {
+        if (getActiveAccount().isFrozen()) {
+            System.out.println("This account is frozen. Unlock it before requesting a loan.");
+            return;
+        }
+        if (getActiveAccount().isClosed()) {
+            System.out.println("This account is closed. You cannot request a loan.");
+            return;
+        }
+
+        double amount = -1;
+        while (amount < 0) {
+            System.out.print("How much would you like to borrow?: ");
+            amount = keyboardInput.nextDouble();
+        }
+
+        if (amount == 0 || amount > 5000) {
+            System.out.println("Loan request failed: amount must be greater than 0 and no more than $5000.");
+            return;
+        }
+
+        System.out.print("Confirm loan of $" + String.format("%.2f", amount) + "? (yes/no): ");
+        String confirmation = keyboardInput.next().trim();
+
+        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+            try {
+                getActiveAccount().requestLoan(amount);
+                System.out.println("Loan approved.");
+                System.out.println("New balance: $" + String.format("%.2f", getActiveAccountBalance()));
+                System.out.println("Your total loan is now: $" + String.format("%.2f", getActiveAccount().getOutstandingLoan()));
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                System.out.println("Loan request failed.");
+            }
+        } else {
+            System.out.println("Loan cancelled.");
+        }
+    }
+
     public void performCheckBalance() {
         System.out.println("Your balance is: $" + String.format("%.2f", getActiveAccount().getBalance()));
     }
@@ -193,6 +231,56 @@ public class MainMenu {
             }
         } else {
             System.out.println("Deposit cancelled.");
+        }
+    }
+
+    public void performPayTowardLoan() {
+        if (getActiveAccount().isFrozen()) {
+            System.out.println("This account is frozen. Unlock it before paying toward your loan.");
+            return;
+        }
+        if (getActiveAccount().isClosed()) {
+            System.out.println("This account is closed. You cannot pay toward a loan.");
+            return;
+        }
+        if (getActiveAccount().getOutstandingLoan() <= 0) {
+            System.out.println("You have no loan balance to pay.");
+            return;
+        }
+
+        double amount = -1;
+        while (amount < 0) {
+            System.out.print("How much would you like to pay toward your loan?: ");
+            amount = keyboardInput.nextDouble();
+        }
+
+        if (amount == 0 || amount > 5000) {
+            System.out.println("Payment failed: amount must be greater than 0 and no more than $5000.");
+            return;
+        }
+        if (amount > getActiveAccountBalance()) {
+            System.out.println("Payment failed: amount cannot exceed your balance.");
+            return;
+        }
+        if (amount > getActiveAccount().getOutstandingLoan()) {
+            System.out.println("Payment failed: amount cannot exceed your outstanding loan.");
+            return;
+        }
+
+        System.out.print("Confirm loan payment of $" + String.format("%.2f", amount) + "? (yes/no): ");
+        String confirmation = keyboardInput.next().trim();
+
+        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+            try {
+                getActiveAccount().payTowardLoan(amount);
+                System.out.println("Loan payment successful.");
+                System.out.println("New balance: $" + String.format("%.2f", getActiveAccountBalance()));
+                System.out.println("Your remaining loan is: $" + String.format("%.2f", getActiveAccount().getOutstandingLoan()));
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                System.out.println("Loan payment failed.");
+            }
+        } else {
+            System.out.println("Loan payment cancelled.");
         }
     }
 
@@ -314,7 +402,8 @@ public class MainMenu {
         if (line == null) {
             return false;
         }
-        return line.startsWith("Withdrawal:") || line.startsWith("Fee Collected:");
+        return line.startsWith("Withdrawal:") || line.startsWith("Fee Collected:")
+            || line.startsWith("Loan payment:");
     }
 
     private static Double extractAmount(String line) {
@@ -470,6 +559,10 @@ public class MainMenu {
             adminLockoutEndTime = System.currentTimeMillis() + (ADMIN_COOLDOWN_SECONDS * 1000);
             System.out.println("Admin Menu locked for " + ADMIN_COOLDOWN_SECONDS + " seconds.");
         }
+    }
+
+    public double getActiveAccountOutstandingLoan() {
+        return getActiveAccount().getOutstandingLoan();
     }
 
     public void run() {

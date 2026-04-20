@@ -194,4 +194,28 @@ public class MainMenuTest {
         assertEquals(beforeAccount, menu.getActiveAccountNumber());
     }
 
+    @Test
+    public void testLoanApprovedUpdatesBalance() {
+        Scanner scanner = new Scanner(new ByteArrayInputStream(
+            ("1\n\npass1234\n100\nyes\n").getBytes()
+        ));
+        MainMenu menu = new MainMenu(scanner);
+        menu.performCreateAdditionalAccount(false);
+        menu.performRequestLoan();
+        assertEquals(100.0, menu.getActiveAccountBalance(), 0.01);
+    }
+
+    @Test
+    public void testPayTowardLoanReducesOutstanding() {
+        Scanner scanner = new Scanner(new ByteArrayInputStream(
+            ("1\n\npass1234\n100\nyes\n40\nyes\n").getBytes()
+        ));
+        MainMenu menu = new MainMenu(scanner);
+        menu.performCreateAdditionalAccount(false);
+        menu.performRequestLoan();
+        menu.performPayTowardLoan();
+        assertEquals(60.0, menu.getActiveAccountBalance(), 0.01);
+        assertEquals(60.0, menu.getActiveAccountOutstandingLoan(), 0.01);
+    }
+
 }
