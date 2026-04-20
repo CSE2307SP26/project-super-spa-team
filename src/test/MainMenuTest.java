@@ -53,7 +53,7 @@ public class MainMenuTest {
         MainMenu menu = new MainMenu(scanner);
         menu.performCreateAdditionalAccount(false);
         menu.performDeposit();
-        assertEquals(50.0, menu.getActiveAccountBalance(), 0.01);
+        assertEquals(50.05, menu.getActiveAccountBalance(), 0.01);
     }
 
     @Test
@@ -72,7 +72,7 @@ public class MainMenuTest {
         menu.performCreateAdditionalAccount(false);
         menu.performDeposit();
         menu.performWithdrawal();
-        assertEquals(30.0, menu.getActiveAccountBalance(), 0.01);
+        assertEquals(30.05, menu.getActiveAccountBalance(), 0.01);
     }
 
     @Test
@@ -82,7 +82,7 @@ public class MainMenuTest {
         menu.performCreateAdditionalAccount(false);
         menu.performDeposit();
         menu.performWithdrawal();
-        assertEquals(50.0, menu.getActiveAccountBalance(), 0.01);
+        assertEquals(50.05, menu.getActiveAccountBalance(), 0.01);
     }
 
     @Test
@@ -105,7 +105,7 @@ public class MainMenuTest {
 
         menu.performSwitchActiveAccount();
 
-        assertEquals(100.0, menu.getActiveAccountBalance(), 0.01);
+        assertEquals(100.1, menu.getActiveAccountBalance(), 0.01);
     }
 
     @Test

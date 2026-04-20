@@ -69,6 +69,7 @@ public class MainMenu {
     public void displayOptions() {
         System.out.println("Welcome to the 237 Bank App!");
         System.out.println("Active account: " + getActiveAccount().getDisplayName());
+        System.out.println("Account Status: " + getActiveAccount().getAccountStatus());
         System.out.println("1. Make a deposit");
         System.out.println("2. Make a withdrawal");
         System.out.println("3. Check Balance");
@@ -175,8 +176,14 @@ public class MainMenu {
 
         if (confirmAction("deposit of $" + String.format("%.2f", depositAmount))) {
             try {
-                getActiveAccount().deposit(depositAmount);
-                System.out.println("Deposit successful. New balance: $" + String.format("%.2f", getActiveAccountBalance()));
+                BankAccount.AccountStatus oldStatus = getActiveAccount().getAccountStatus();
+                double bonus = getActiveAccount().deposit(depositAmount);
+                System.out.println("Deposit successful. $"
+                    + String.format("%.2f", bonus)
+                    + " deposit bonus due to "
+                    + oldStatus.label()
+                    + " status. New balance: $"
+                    + String.format("%.2f", getActiveAccountBalance()));
             } catch (IllegalArgumentException e) {
                 System.out.println("Deposit failed: amount must be greater than 0 and no more than $5000.");
             }

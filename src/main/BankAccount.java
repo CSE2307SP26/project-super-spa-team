@@ -12,15 +12,28 @@ public class BankAccount {
         CHECKING, SAVINGS
     }
 
+    public enum AccountStatus {
+        BRONZE, SILVER, GOLD;
+
+        public String label() {
+            return name().charAt(0) + name().substring(1).toLowerCase();
+        }
+    }
+
     private static final SecureRandom RNG = new SecureRandom();
     private static final char[] UNLOCK_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".toCharArray();
     private static final double MAX_TRANSACTION_LIMIT = 5000.0;
+
+    private static final double BRONZE_BONUS_RATE = 1.0;
+    private static final double SILVER_BONUS_RATE = 2.0;
+    private static final double GOLD_BONUS_RATE   = 3.0;
 
     static final double MINIMUM_BALANCE = 100.0;
     static final double MINIMUM_BALANCE_FEE = 25.0;
 
     private final String accountNumber;
     private final AccountType accountType;
+    private AccountStatus accountStatus;
     private double balance;
     private final List<String> transactionHistory;
     private boolean closed;
@@ -49,6 +62,7 @@ public class BankAccount {
         this.code = null;
         this.password = null;
         this.hasMetMinimumBalance = false;
+        this.accountStatus = AccountStatus.BRONZE;
     }
 
     public String getAccountNumber() {
@@ -57,6 +71,20 @@ public class BankAccount {
 
     public AccountType getAccountType() {
         return accountType;
+    }
+
+    public AccountStatus getAccountStatus() {
+        return accountStatus;
+    }
+
+    private void updateAccountStatus() {
+        if (this.balance < 1000) {
+            this.accountStatus = AccountStatus.BRONZE;
+        } else if (this.balance < 3000) {
+            this.accountStatus = AccountStatus.SILVER;
+        } else {
+            this.accountStatus = AccountStatus.GOLD;
+        }
     }
 
     public boolean isSavings() {
@@ -125,15 +153,43 @@ public class BankAccount {
         return hasMetMinimumBalance && this.balance < MINIMUM_BALANCE;
     }
 
-    public void deposit(double amount) {
+    public double calculateDepositBonus(double depositAmount) {
+        double thousands = depositAmount / 1000.0;
+        double rate;
+        switch (this.accountStatus) {
+            case SILVER:
+                rate = SILVER_BONUS_RATE;
+                break;
+            case GOLD:
+                rate = GOLD_BONUS_RATE;
+                break;
+            default:
+                rate = BRONZE_BONUS_RATE;
+        }
+        return thousands * rate;
+    }
+
+    public double deposit(double amount) {
         if (amount <= 0 || amount > MAX_TRANSACTION_LIMIT) {
             throw new IllegalArgumentException();
         }
+
+        // calculate bonus based on status BEFORE deposit
+        double bonus = calculateDepositBonus(amount);
+
         this.balance += amount;
+        this.balance += bonus;
+
+        updateAccountStatus();
+
         this.transactionHistory.add("Deposit: $" + String.format("%.2f", amount));
+        this.transactionHistory.add("Deposit Bonus: $" + String.format("%.2f", bonus));
+
         if (this.balance >= MINIMUM_BALANCE) {
             this.hasMetMinimumBalance = true;
         }
+
+        return bonus;
     }
 
     public void withdraw(double amount) {
@@ -141,6 +197,7 @@ public class BankAccount {
             throw new IllegalArgumentException();
         }
         this.balance -= amount;
+        updateAccountStatus();
         this.transactionHistory.add("Withdrawal: $" + String.format("%.2f", amount));
     }
 
@@ -149,6 +206,7 @@ public class BankAccount {
             throw new IllegalArgumentException();
         }
         this.balance -= fee;
+        updateAccountStatus();
         this.transactionHistory.add("Fee Collected: $" + String.format("%.2f", fee));
     }
 
@@ -157,6 +215,7 @@ public class BankAccount {
             throw new IllegalArgumentException();
         }
         this.balance += amount;
+        updateAccountStatus();
         this.transactionHistory.add("Interest Payment: $" + String.format("%.2f", amount));
         if (this.balance >= MINIMUM_BALANCE) {
             this.hasMetMinimumBalance = true;
@@ -175,6 +234,8 @@ public class BankAccount {
         }
         this.balance -= amount;
         recipient.balance += amount;
+        this.updateAccountStatus();
+        recipient.updateAccountStatus();
     }
 
     public String freeze() {
@@ -225,6 +286,7 @@ public class BankAccount {
         }
         double fee = Math.min(MINIMUM_BALANCE_FEE, this.balance);
         this.balance -= fee;
+        updateAccountStatus();
         this.transactionHistory.add("Minimum Balance Fee: $" + String.format("%.2f", MINIMUM_BALANCE_FEE));
     }
 

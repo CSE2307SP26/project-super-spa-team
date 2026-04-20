@@ -72,7 +72,7 @@ public class AdminMenuTest {
         AdminMenu adminMenu = new AdminMenu(account, scanner, accounts);
         adminMenu.performApplyMinimumBalanceFees();
 
-        assertEquals(25.0, account.getBalance(), 0.01);
+        assertEquals(25.1, account.getBalance(), 0.01);
     }
 
     @Test
@@ -87,7 +87,7 @@ public class AdminMenuTest {
         AdminMenu adminMenu = new AdminMenu(account, scanner, accounts);
         adminMenu.performApplyMinimumBalanceFees();
 
-        assertEquals(150.0, account.getBalance(), 0.01);
+        assertEquals(150.15, account.getBalance(), 0.01);
     }
 
     @Test
@@ -103,7 +103,7 @@ public class AdminMenuTest {
         Scanner scanner = new Scanner(new ByteArrayInputStream("".getBytes()));
         AdminMenu adminMenu = new AdminMenu(account, scanner, accounts);
         adminMenu.performApplyMinimumBalanceFees();
-        assertEquals(50.0, account.getBalance(), 0.01);
+        assertEquals(50.1, account.getBalance(), 0.01);
     }
 
     @Test
@@ -118,7 +118,7 @@ public class AdminMenuTest {
         adminMenu.performInterestPayment();
         System.setOut(System.out);
 
-        assertEquals(100.0, account.getBalance(), 0.01);
+        assertEquals(100.1, account.getBalance(), 0.01);
         assertTrue(out.toString().contains("Savings accounts"));
     }
 
@@ -131,7 +131,7 @@ public class AdminMenuTest {
 
         adminMenu.performInterestPayment();
 
-        assertEquals(150.0, account.getBalance(), 0.01);
+        assertEquals(150.1, account.getBalance(), 0.01);
     }
 
     @Test
