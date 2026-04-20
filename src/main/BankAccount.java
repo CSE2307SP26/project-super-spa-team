@@ -32,6 +32,9 @@ public class BankAccount {
     private static final double SILVER_BONUS_RATE = 2.0;
     private static final double GOLD_BONUS_RATE   = 3.0;
 
+    private static final double SILVER_THRESHOLD = 1000.0;
+    private static final double GOLD_THRESHOLD   = 3000.0;
+
     static final double MINIMUM_BALANCE = 100.0;
     static final double MINIMUM_BALANCE_FEE = 25.0;
 
@@ -84,9 +87,9 @@ public class BankAccount {
     }
 
     private void updateAccountStatus() {
-        if (this.balance < 1000) {
+        if (this.balance < SILVER_THRESHOLD) {
             this.accountStatus = AccountStatus.BRONZE;
-        } else if (this.balance < 3000) {
+        } else if (this.balance < GOLD_THRESHOLD) {
             this.accountStatus = AccountStatus.SILVER;
         } else {
             this.accountStatus = AccountStatus.GOLD;
