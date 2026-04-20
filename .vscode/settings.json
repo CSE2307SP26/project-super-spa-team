@@ -6,5 +6,6 @@
     "java.project.referencedLibraries": [
         "lib\\junit-platform-console-standalone-1.13.0-M3.jar",
         "test-lib\\**\\*.jar"
-    ]
+    ],
+    "java.debug.settings.onBuildFailureProceed": true
 }

@@ -7,8 +7,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.Test;
+
 
 public class BankAccountTest {
 
@@ -16,7 +21,7 @@ public class BankAccountTest {
     public void testDeposit() {
         BankAccount testAccount = new BankAccount("TEST-1");
         testAccount.deposit(50);
-        assertEquals(50, testAccount.getBalance(), 0.01);
+        assertEquals(50.05, testAccount.getBalance(), 0.01);
     }
 
     @Test
@@ -35,7 +40,7 @@ public class BankAccountTest {
         BankAccount testAccount = new BankAccount("TEST-1");
         testAccount.deposit(50);
         testAccount.withdraw(20);
-        assertEquals(30, testAccount.getBalance(), 0.01);
+        assertEquals(30.05, testAccount.getBalance(), 0.01);
     }
 
     @Test
@@ -54,7 +59,7 @@ public class BankAccountTest {
         BankAccount testAccount = new BankAccount("TEST-1");
         testAccount.deposit(100);
         testAccount.collectFee(25);
-        assertEquals(75, testAccount.getBalance(), 0.01);
+        assertEquals(75.10, testAccount.getBalance(), 0.01);
     }
 
     @Test
@@ -116,7 +121,7 @@ public class BankAccountTest {
     public void testCheckBalance() {
         BankAccount testAccount = new BankAccount("TEST-1");
         testAccount.deposit(50);
-        assertEquals(50, testAccount.getBalance(), 0.01);
+        assertEquals(50.05, testAccount.getBalance(), 0.01);
     }
 
     @Test
@@ -538,5 +543,41 @@ public class BankAccountTest {
         }
     }
 
+    @Test
+    public void testBronzeDepositBonus() {
+        BankAccount account = new BankAccount("TEST-1");
+
+        double bonus = account.deposit(2000);
+
+        assertEquals(2.0, bonus, 0.01);
+        assertEquals(2002.0, account.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testSilverDepositBonus() {
+        BankAccount account = new BankAccount("TEST-1");
+
+        account.deposit(1000); // Bronze bonus = 1.0, balance becomes 1001.0, now Silver
+        double startingBalance = account.getBalance();
+
+        double bonus = account.deposit(2000); // Silver bonus = 4.0
+
+        assertEquals(4.0, bonus, 0.01);
+        assertEquals(startingBalance + 2000 + 4.0, account.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testGoldDepositBonus() {
+        BankAccount account = new BankAccount("TEST-1");
+
+        account.deposit(3000); // Bronze bonus = 3.0, balance becomes 3003.0, now Gold
+        double startingBalance = account.getBalance();
+
+        double bonus = account.deposit(2000); // Gold bonus = 6.0
+
+        assertEquals(6.0, bonus, 0.01);
+        assertEquals(startingBalance + 2000 + 6.0, account.getBalance(), 0.01);
+    }
+    
 }
 
