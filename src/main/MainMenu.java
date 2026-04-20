@@ -70,6 +70,10 @@ public class MainMenu {
         return getActiveAccount().getBalance();
     }
 
+    public double getActiveAccountOutstandingLoan() {
+        return getActiveAccount().getOutstandingLoan();
+    }
+
     public void displayOptions() {
         System.out.println("Welcome to the 237 Bank App!");
         System.out.println("Active account: " + getActiveAccount().getDisplayName());
@@ -130,8 +134,7 @@ public class MainMenu {
     }
 
     public void performRequestLoan() {
-        if (getActiveAccount().isFrozen()) {
-            System.out.println("This account is frozen. Unlock it before requesting a loan.");
+        if (isActiveAccountFrozen("loan request")) {
             return;
         }
         if (getActiveAccount().isClosed()) {
@@ -139,21 +142,14 @@ public class MainMenu {
             return;
         }
 
-        double amount = -1;
-        while (amount < 0) {
-            System.out.print("How much would you like to borrow?: ");
-            amount = keyboardInput.nextDouble();
-        }
+        double amount = promptForPositiveAmount("How much would you like to borrow?: ");
 
-        if (amount == 0 || amount > 5000) {
-            System.out.println("Loan request failed: amount must be greater than 0 and no more than $5000.");
+        if (isAmountInvalid(amount, false)) {
+            System.out.println("Loan request failed: amount must be greater than 0 and no more than $" + String.format("%.0f", MAX_TRANSACTION_LIMIT) + ".");
             return;
         }
 
-        System.out.print("Confirm loan of $" + String.format("%.2f", amount) + "? (yes/no): ");
-        String confirmation = keyboardInput.next().trim();
-
-        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+        if (confirmAction("loan of $" + String.format("%.2f", amount))) {
             try {
                 getActiveAccount().requestLoan(amount);
                 System.out.println("Loan approved.");
@@ -235,8 +231,7 @@ public class MainMenu {
     }
 
     public void performPayTowardLoan() {
-        if (getActiveAccount().isFrozen()) {
-            System.out.println("This account is frozen. Unlock it before paying toward your loan.");
+        if (isActiveAccountFrozen("loan payment")) {
             return;
         }
         if (getActiveAccount().isClosed()) {
@@ -248,18 +243,10 @@ public class MainMenu {
             return;
         }
 
-        double amount = -1;
-        while (amount < 0) {
-            System.out.print("How much would you like to pay toward your loan?: ");
-            amount = keyboardInput.nextDouble();
-        }
+        double amount = promptForPositiveAmount("How much would you like to pay toward your loan?: ");
 
-        if (amount == 0 || amount > 5000) {
-            System.out.println("Payment failed: amount must be greater than 0 and no more than $5000.");
-            return;
-        }
-        if (amount > getActiveAccountBalance()) {
-            System.out.println("Payment failed: amount cannot exceed your balance.");
+        if (isAmountInvalid(amount, true)) {
+            System.out.println("Payment failed: amount must be greater than 0, no more than $" + String.format("%.0f", MAX_TRANSACTION_LIMIT) + ", and no more than your balance.");
             return;
         }
         if (amount > getActiveAccount().getOutstandingLoan()) {
@@ -267,10 +254,7 @@ public class MainMenu {
             return;
         }
 
-        System.out.print("Confirm loan payment of $" + String.format("%.2f", amount) + "? (yes/no): ");
-        String confirmation = keyboardInput.next().trim();
-
-        if (confirmation.equalsIgnoreCase("yes") || confirmation.equalsIgnoreCase("y")) {
+        if (confirmAction("loan payment of $" + String.format("%.2f", amount))) {
             try {
                 getActiveAccount().payTowardLoan(amount);
                 System.out.println("Loan payment successful.");
@@ -559,10 +543,6 @@ public class MainMenu {
             adminLockoutEndTime = System.currentTimeMillis() + (ADMIN_COOLDOWN_SECONDS * 1000);
             System.out.println("Admin Menu locked for " + ADMIN_COOLDOWN_SECONDS + " seconds.");
         }
-    }
-
-    public double getActiveAccountOutstandingLoan() {
-        return getActiveAccount().getOutstandingLoan();
     }
 
     public void run() {
