@@ -6,14 +6,21 @@ import java.util.Scanner;
 
 public class AdminMenu {
 
+    private static final int COLLECT_FEE_SELECTION = 1;
+    private static final int INTEREST_SELECTION = 2;
+    private static final int VIEW_ALL_SELECTION = 3;
+    private static final int FREEZE_SELECTION = 4;
+    private static final int UNLOCK_SELECTION = 5;
+    private static final int MIN_BALANCE_SELECTION = 6;
+    private static final int VIEW_HISTORY_SELECTION = 7;
     private static final int EXIT_SELECTION = 8;
     private static final int MAX_SELECTION = 8;
     private static final String ADMIN_PASSWORD = "admin123";
     private static final int MAX_PASSWORD_ATTEMPTS = 3;
 
-    private BankAccount account;
-    private Map<String, BankAccount> allAccounts;
-    private Scanner keyboardInput;
+    private final BankAccount account;
+    private final Map<String, BankAccount> allAccounts;
+    private final Scanner keyboardInput;
 
     public AdminMenu(BankAccount account, Scanner keyboardInput, Map<String, BankAccount> allAccounts) {
         this.account = account;
@@ -59,25 +66,25 @@ public class AdminMenu {
 
     public void processInput(int selection) {
         switch (selection) {
-            case 1:
+            case COLLECT_FEE_SELECTION:
                 performCollection();
                 break;
-            case 2:
+            case INTEREST_SELECTION:
                 performInterestPayment();
                 break;
-            case 3:
+            case VIEW_ALL_SELECTION:
                 performViewAllAccounts();
                 break;
-            case 4:
+            case FREEZE_SELECTION:
                 performFreeze();
                 break;
-            case 5:
+            case UNLOCK_SELECTION:
                 performUnlock();
                 break;
-            case 6:
+            case MIN_BALANCE_SELECTION:
                 performApplyMinimumBalanceFees();
                 break;
-            case 7:
+            case VIEW_HISTORY_SELECTION:
                 performViewTransactionHistory();
                 break;
         }
@@ -177,7 +184,8 @@ public class AdminMenu {
             if (acc.isBelowMinimumBalance()) {
                 acc.applyMinimumBalanceFee();
                 System.out.println("Notice: " + acc.getDisplayName()
-                    + " charged a $25.00 minimum balance fee. New balance: $"
+                    + " charged a $" + String.format("%.2f", BankAccount.MINIMUM_BALANCE_FEE)
+                    + " minimum balance fee. New balance: $"
                     + String.format("%.2f", acc.getBalance()));
                 feeCount++;
             }

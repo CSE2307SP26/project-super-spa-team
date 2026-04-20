@@ -9,7 +9,11 @@ import java.security.SecureRandom;
 public class BankAccount {
 
     public enum AccountType {
-        CHECKING, SAVINGS
+        CHECKING, SAVINGS;
+
+        public String label() {
+            return name().charAt(0) + name().substring(1).toLowerCase();
+        }
     }
 
     public enum AccountStatus {
@@ -121,8 +125,7 @@ public class BankAccount {
     }
 
     public String getDisplayName() {
-        String typeLabel = "[" + accountType.name().charAt(0)
-            + accountType.name().substring(1).toLowerCase() + "]";
+        String typeLabel = "[" + accountType.label() + "]";
         if (nickname == null) {
             return accountNumber + " " + typeLabel;
         }
