@@ -3,10 +3,6 @@ package test;
 import main.BankAccount;
 import main.BankAccount.AccountType;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -102,7 +98,7 @@ public class BankAccountTest {
         BankAccount testAccount = new BankAccount("TEST-1");
         testAccount.deposit(100);
         testAccount.addInterest(50);
-        assertEquals(150, testAccount.getBalance(), 0.01);
+        assertEquals(150.1, testAccount.getBalance(), 0.01);
     }
 
     @Test
@@ -132,12 +128,13 @@ public class BankAccountTest {
         testAccount.addInterest(50);
         testAccount.withdraw(50);
 
-        assertEquals(5, testAccount.getTransactionHistory().size());
+        assertEquals(6, testAccount.getTransactionHistory().size());
         assertTrue(testAccount.getTransactionHistory().get(0).contains("Account opened"));
         assertTrue(testAccount.getTransactionHistory().get(1).contains("Deposit"));
-        assertTrue(testAccount.getTransactionHistory().get(2).contains("Fee Collected"));
-        assertTrue(testAccount.getTransactionHistory().get(3).contains("Interest Payment"));
-        assertTrue(testAccount.getTransactionHistory().get(4).contains("Withdrawal"));
+        assertTrue(testAccount.getTransactionHistory().get(2).contains("Deposit Bonus"));
+        assertTrue(testAccount.getTransactionHistory().get(3).contains("Fee Collected"));
+        assertTrue(testAccount.getTransactionHistory().get(4).contains("Interest Payment"));
+        assertTrue(testAccount.getTransactionHistory().get(5).contains("Withdrawal"));
     }
 
     @Test
@@ -148,7 +145,7 @@ public class BankAccountTest {
         source.deposit(100);
         source.transfer(recipient, 25);
 
-        assertEquals(75, source.getBalance(), 0.01);
+        assertEquals(75.1, source.getBalance(), 0.01);
         assertEquals(25, recipient.getBalance(), 0.01);
     }
 
@@ -205,10 +202,10 @@ public class BankAccountTest {
         source.deposit(100);
         recipient.deposit(10);
 
-        source.transfer(recipient, 100);
+        source.transfer(recipient, 100.1);
 
         assertEquals(0, source.getBalance(), 0.01);
-        assertEquals(110, recipient.getBalance(), 0.01);
+        assertEquals(110.11, recipient.getBalance(), 0.01);
     }
 
     @Test
@@ -494,7 +491,7 @@ public class BankAccountTest {
         account.deposit(100);
         account.withdraw(50);
         account.applyMinimumBalanceFee();
-        assertEquals(25.0, account.getBalance(), 0.01);
+        assertEquals(25.1, account.getBalance(), 0.01);
     }
 
     @Test

@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
-import main.BankAccount.AccountStatus;
-import main.BankAccount.AccountType;
-
 import java.security.SecureRandom;
 
 public class BankAccount {
@@ -16,13 +12,21 @@ public class BankAccount {
         CHECKING, SAVINGS
     }
 
-    public enum AccountStatus{
-        BRONZE, SILVER, GOLD
+    public enum AccountStatus {
+        BRONZE, SILVER, GOLD;
+
+        public String label() {
+            return name().charAt(0) + name().substring(1).toLowerCase();
+        }
     }
 
     private static final SecureRandom RNG = new SecureRandom();
     private static final char[] UNLOCK_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".toCharArray();
     private static final double MAX_TRANSACTION_LIMIT = 5000.0;
+
+    private static final double BRONZE_BONUS_RATE = 1.0;
+    private static final double SILVER_BONUS_RATE = 2.0;
+    private static final double GOLD_BONUS_RATE   = 3.0;
 
     static final double MINIMUM_BALANCE = 100.0;
     static final double MINIMUM_BALANCE_FEE = 25.0;
@@ -75,11 +79,11 @@ public class BankAccount {
 
     private void updateAccountStatus() {
         if (this.balance < 1000) {
-            this.accountStatus = AccountStatus.BRONZE; // 0 <= balance < 1000 : Bronze
-        } else if (this.balance < 3000) { // 1000 <= balance < 3000 : Silver
-            this.accountStatus = AccountStatus.SILVER; 
+            this.accountStatus = AccountStatus.BRONZE;
+        } else if (this.balance < 3000) {
+            this.accountStatus = AccountStatus.SILVER;
         } else {
-            this.accountStatus = AccountStatus.GOLD; // balance >= 3000 : gold
+            this.accountStatus = AccountStatus.GOLD;
         }
     }
 
@@ -151,19 +155,17 @@ public class BankAccount {
 
     public double calculateDepositBonus(double depositAmount) {
         double thousands = depositAmount / 1000.0;
-
         double rate;
         switch (this.accountStatus) {
             case SILVER:
-                rate = 2;
+                rate = SILVER_BONUS_RATE;
                 break;
             case GOLD:
-                rate = 3;
+                rate = GOLD_BONUS_RATE;
                 break;
-            default: // Bronze
-                rate = 1;
+            default:
+                rate = BRONZE_BONUS_RATE;
         }
-
         return thousands * rate;
     }
 

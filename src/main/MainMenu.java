@@ -177,15 +177,13 @@ public class MainMenu {
         if (confirmAction("deposit of $" + String.format("%.2f", depositAmount))) {
             try {
                 BankAccount.AccountStatus oldStatus = getActiveAccount().getAccountStatus();
-            double bonus = getActiveAccount().deposit(depositAmount);
-
-            System.out.println("Deposit successful. $"
-                + String.format("%.2f", bonus)
-                + " deposit bonus due to "
-                + oldStatus.name().charAt(0)
-                + oldStatus.name().substring(1).toLowerCase()
-                + " status. New balance: $"
-                + String.format("%.2f", getActiveAccountBalance()));        
+                double bonus = getActiveAccount().deposit(depositAmount);
+                System.out.println("Deposit successful. $"
+                    + String.format("%.2f", bonus)
+                    + " deposit bonus due to "
+                    + oldStatus.label()
+                    + " status. New balance: $"
+                    + String.format("%.2f", getActiveAccountBalance()));
             } catch (IllegalArgumentException e) {
                 System.out.println("Deposit failed: amount must be greater than 0 and no more than $5000.");
             }
